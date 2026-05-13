@@ -1,16 +1,24 @@
-/// The main number input page.
-///
-/// Provides a centered, responsive layout where the user enters a number
-/// and sees the reverse-difference result.
-library;
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:logic_lab/features/number/presentation/bloc/number_bloc.dart';
-import 'package:logic_lab/features/number/presentation/bloc/number_event.dart';
-import 'package:logic_lab/features/number/presentation/bloc/number_state.dart';
 import 'package:responsive_framework/responsive_framework.dart';
+
+// ---------------------------------------------------------------------------
+// Logic Helpers
+// ---------------------------------------------------------------------------
+
+class ReverseResult {
+  final int reversed;
+  final int difference;
+
+  ReverseResult({required this.reversed, required this.difference});
+}
+
+ReverseResult computeReverseDifference(int number) {
+  final reversedStr = number.toString().split('').reversed.join();
+  final reversedNum = int.tryParse(reversedStr) ?? 0;
+  final difference = (number - reversedNum).abs();
+  return ReverseResult(reversed: reversedNum, difference: difference);
+}
 
 /// Entry page for the number reversal feature.
 class NumberPage extends StatefulWidget {
@@ -24,22 +32,65 @@ class _NumberPageState extends State<NumberPage> {
   final _controller = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
+  bool _isLoading = false;
+  int? _original;
+  int? _reversed;
+  int? _difference;
+  String? _errorMessage;
+
   @override
   void dispose() {
     _controller.dispose();
     super.dispose();
   }
 
-  void _submit() {
+  void _submit() async {
     if (_formKey.currentState?.validate() ?? false) {
-      context.read<NumberBloc>().add(NumberSubmitted(_controller.text.trim()));
+      setState(() {
+        _isLoading = true;
+        _errorMessage = null;
+        _original = null;
+        _reversed = null;
+        _difference = null;
+      });
+
+      // Simulate a slight delay for UX (optional, but keeps the original feel)
+      await Future.delayed(const Duration(milliseconds: 300));
+
+      if (!mounted) return;
+
+      final inputStr = _controller.text.trim();
+      final number = int.tryParse(inputStr);
+
+      if (number == null || number < 0) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = 'Invalid number format.';
+        });
+        return;
+      }
+
+      final result = computeReverseDifference(number);
+
+      setState(() {
+        _isLoading = false;
+        _original = number;
+        _reversed = result.reversed;
+        _difference = result.difference;
+      });
     }
   }
 
   void _reset() {
     _controller.clear();
-    context.read<NumberBloc>().add(const NumberReset());
     _formKey.currentState?.reset();
+    setState(() {
+      _isLoading = false;
+      _original = null;
+      _reversed = null;
+      _difference = null;
+      _errorMessage = null;
+    });
   }
 
   @override
@@ -86,45 +137,25 @@ class _NumberPageState extends State<NumberPage> {
                     onSubmit: _submit,
                   ),
                   const SizedBox(height: 20),
-                  _SubmitButton(onSubmit: _submit, colorScheme: colorScheme),
+                  _SubmitButton(
+                    onSubmit: _submit,
+                    colorScheme: colorScheme,
+                    isLoading: _isLoading,
+                  ),
                   const SizedBox(height: 32),
-                  BlocBuilder<NumberBloc, NumberState>(
-                    builder: (context, state) {
-                      return AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 350),
-                        transitionBuilder: (child, animation) =>
-                            FadeTransition(
-                          opacity: animation,
-                          child: SlideTransition(
-                            position: Tween<Offset>(
-                              begin: const Offset(0, 0.15),
-                              end: Offset.zero,
-                            ).animate(animation),
-                            child: child,
-                          ),
-                        ),
-                        child: switch (state) {
-                          NumberInitial() => const SizedBox.shrink(key: ValueKey('initial')),
-                          NumberLoading() => _LoadingIndicator(key: const ValueKey('loading'), colorScheme: colorScheme),
-                          NumberSuccess(:final original, :final reversed, :final difference) =>
-                            _ResultCard(
-                              key: ValueKey('success-$original'),
-                              original: original,
-                              reversed: reversed,
-                              difference: difference,
-                              colorScheme: colorScheme,
-                              textTheme: textTheme,
-                              onReset: _reset,
-                            ),
-                          NumberError(:final message) => _ErrorCard(
-                              key: ValueKey('error-$message'),
-                              message: message,
-                              colorScheme: colorScheme,
-                              textTheme: textTheme,
-                            ),
-                        },
-                      );
-                    },
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 350),
+                    transitionBuilder: (child, animation) => FadeTransition(
+                      opacity: animation,
+                      child: SlideTransition(
+                        position: Tween<Offset>(
+                          begin: const Offset(0, 0.15),
+                          end: Offset.zero,
+                        ).animate(animation),
+                        child: child,
+                      ),
+                    ),
+                    child: _buildResultArea(colorScheme, textTheme),
                   ),
                 ],
               ),
@@ -133,6 +164,32 @@ class _NumberPageState extends State<NumberPage> {
         ),
       ),
     );
+  }
+
+  Widget _buildResultArea(ColorScheme colorScheme, TextTheme textTheme) {
+    if (_isLoading) {
+      return _LoadingIndicator(key: const ValueKey('loading'), colorScheme: colorScheme);
+    }
+    if (_errorMessage != null) {
+      return _ErrorCard(
+        key: ValueKey('error-$_errorMessage'),
+        message: _errorMessage!,
+        colorScheme: colorScheme,
+        textTheme: textTheme,
+      );
+    }
+    if (_original != null && _reversed != null && _difference != null) {
+      return _ResultCard(
+        key: ValueKey('success-$_original'),
+        original: _original!,
+        reversed: _reversed!,
+        difference: _difference!,
+        colorScheme: colorScheme,
+        textTheme: textTheme,
+        onReset: _reset,
+      );
+    }
+    return const SizedBox.shrink(key: ValueKey('initial'));
   }
 }
 
@@ -253,45 +310,42 @@ class _SubmitButton extends StatelessWidget {
   const _SubmitButton({
     required this.onSubmit,
     required this.colorScheme,
+    required this.isLoading,
   });
 
   final VoidCallback onSubmit;
   final ColorScheme colorScheme;
+  final bool isLoading;
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<NumberBloc, NumberState>(
-      builder: (context, state) {
-        final isLoading = state is NumberLoading;
-        return FilledButton(
-          key: const Key('submit_button'),
-          onPressed: isLoading ? null : onSubmit,
-          style: FilledButton.styleFrom(
-            minimumSize: const Size.fromHeight(52),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14),
+    return FilledButton(
+      key: const Key('submit_button'),
+      onPressed: isLoading ? null : onSubmit,
+      style: FilledButton.styleFrom(
+        minimumSize: const Size.fromHeight(52),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14),
+        ),
+        backgroundColor: colorScheme.primary,
+      ),
+      child: isLoading
+          ? SizedBox(
+              height: 20,
+              width: 20,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: colorScheme.onPrimary,
+              ),
+            )
+          : const Text(
+              'Calculate',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0.5,
+              ),
             ),
-            backgroundColor: colorScheme.primary,
-          ),
-          child: isLoading
-              ? SizedBox(
-                  height: 20,
-                  width: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: colorScheme.onPrimary,
-                  ),
-                )
-              : const Text(
-                  'Calculate',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-        );
-      },
     );
   }
 }
@@ -341,7 +395,6 @@ class _ResultCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      key: key,
       elevation: 0,
       color: colorScheme.primaryContainer,
       shape: RoundedRectangleBorder(
