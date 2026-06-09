@@ -20,6 +20,44 @@ ReverseResult computeReverseDifference(int number) {
   return ReverseResult(reversed: reversedNum, difference: difference);
 }
 
+String fizzBuzz(int n) {
+  if (n == 0) return '';
+  if (n % 15 == 0) return 'FizzBuzz';
+  if (n % 3 == 0) return 'Fizz';
+  if (n % 5 == 0) return 'Buzz';
+  return '$n';
+}
+
+List<int> fibonacciUntil(int max) {
+  if (max < 0) return [];
+
+  List<int> result = [0];
+
+  if (max == 0) return result;
+
+  int a = 0;
+  int b = 1;
+
+  while (b <= max) {
+    result.add(b);
+
+    int next = a + b;
+    a = b;
+    b = next;
+  }
+
+  return result;
+}
+
+List<String> fibonacciFizzBuzz(int max) {
+  final fibs = fibonacciUntil(max);
+
+  return fibs.map((n) {
+    if (n == 0) return '0';
+    return fizzBuzz(n);
+  }).toList();
+}
+
 /// Entry page for the number reversal feature.
 class NumberPage extends StatefulWidget {
   const NumberPage({super.key});
@@ -31,16 +69,19 @@ class NumberPage extends StatefulWidget {
 class _NumberPageState extends State<NumberPage> {
   final _controller = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  final _fizzBuzzController = TextEditingController();
 
   bool _isLoading = false;
   int? _original;
   int? _reversed;
   int? _difference;
   String? _errorMessage;
+  List<String> _fizzBuzzItems = [];
 
   @override
   void dispose() {
     _controller.dispose();
+    _fizzBuzzController.dispose();
     super.dispose();
   }
 
@@ -141,6 +182,27 @@ class _NumberPageState extends State<NumberPage> {
                     onSubmit: _submit,
                     colorScheme: colorScheme,
                     isLoading: _isLoading,
+                  ),
+                  const SizedBox(height: 32),
+                  _FizzBuzzSection(
+                    controller: _fizzBuzzController,
+                    items: _fizzBuzzItems,
+                    colorScheme: colorScheme,
+                    textTheme: textTheme,
+                    onChanged: (value) {
+                      final n = int.tryParse(value.trim());
+                      setState(() {
+                        if (n == null || n <= 0) {
+                          _fizzBuzzItems = [];
+                        } else {
+                          final cap = n.clamp(1, 100);
+                          _fizzBuzzItems = List.generate(
+                            cap,
+                            (i) => fizzBuzz(i + 1),
+                          );
+                        }
+                      });
+                    },
                   ),
                   const SizedBox(height: 32),
                   AnimatedSwitcher(
@@ -442,16 +504,84 @@ class _ResultCard extends StatelessWidget {
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                Text(
-                  '$difference',
-                  style: textTheme.displaySmall?.copyWith(
-                    color: colorScheme.onPrimaryContainer,
-                    fontWeight: FontWeight.w800,
-                  ),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      '$difference',
+                      style: textTheme.displaySmall?.copyWith(
+                        color: colorScheme.onPrimaryContainer,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      '(${fizzBuzz(difference)})',
+                      style: textTheme.titleMedium?.copyWith(
+                        color: colorScheme.onPrimaryContainer.withValues(alpha: 0.8),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
             const SizedBox(height: 20),
+            //
+            // Text(
+            //   'Fibonacci Sequence',
+            //   style: textTheme.labelLarge?.copyWith(
+            //     color: colorScheme.onPrimaryContainer.withValues(alpha: 0.75),
+            //     fontWeight: FontWeight.w700,
+            //     letterSpacing: 1,
+            //   ),
+            // ),
+            //
+            // const SizedBox(height: 12),
+
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: fibonacciFizzBuzz(difference).map((item) {
+                final isFizzBuzz = item == 'FizzBuzz';
+                final isFizz = item == 'Fizz';
+                final isBuzz = item == 'Buzz';
+
+                Color chipColor = colorScheme.onPrimaryContainer;
+
+                if (isFizzBuzz) {
+                  chipColor = Colors.purple;
+                } else if (isFizz) {
+                  chipColor = Colors.green;
+                } else if (isBuzz) {
+                  chipColor = Colors.green;
+                }
+
+                return Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: chipColor.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: chipColor.withValues(alpha: 0.3),
+                    ),
+                  ),
+                  child: Text(
+                    item,
+                    style: textTheme.labelMedium?.copyWith(
+                      color: chipColor,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+
+            const SizedBox(height: 20),
+
             TextButton.icon(
               key: const Key('reset_button'),
               onPressed: onReset,
@@ -550,6 +680,145 @@ class _ErrorCard extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// FizzBuzz Section
+// ---------------------------------------------------------------------------
+
+class _FizzBuzzSection extends StatelessWidget {
+  const _FizzBuzzSection({
+    required this.controller,
+    required this.items,
+    required this.colorScheme,
+    required this.textTheme,
+    required this.onChanged,
+  });
+
+  final TextEditingController controller;
+  final List<String> items;
+  final ColorScheme colorScheme;
+  final TextTheme textTheme;
+  final ValueChanged<String> onChanged;
+
+  static Color _chipColor(String label) {
+    if (label == 'FizzBuzz') return const Color(0xFF7C3AED); // purple
+    if (label == 'Fizz') return const Color(0xFF16A34A);    // green
+    if (label == 'Buzz') return const Color(0xFFEA580C);    // orange
+    return const Color(0xFF64748B);                          // slate
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Visibility(
+      visible: false,
+      child: Card(
+        elevation: 0,
+        color: colorScheme.surfaceContainerLow,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: colorScheme.outlineVariant),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'FizzBuzz',
+                style: textTheme.labelLarge?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 1.2,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Div by 3 → Fizz  •  by 5 → Buzz  •  by both → FizzBuzz',
+                style: textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurfaceVariant.withValues(alpha: 0.65),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                key: const Key('fizzbuzz_input_field'),
+                controller: controller,
+                keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                onChanged: onChanged,
+                decoration: InputDecoration(
+                  labelText: 'Enter N (shows 1 … N)',
+                  labelStyle: textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
+                ),
+              ),
+              if (items.isNotEmpty) ...[
+                const SizedBox(height: 16),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    for (var i = 0; i < items.length; i++)
+                      _FizzBuzzChip(
+                        index: i + 1,
+                        label: items[i],
+                        color: _chipColor(items[i]),
+                        textTheme: textTheme,
+                      ),
+                  ],
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _FizzBuzzChip extends StatelessWidget {
+  const _FizzBuzzChip({
+    required this.index,
+    required this.label,
+    required this.color,
+    required this.textTheme,
+  });
+
+  final int index;
+  final String label;
+  final Color color;
+  final TextTheme textTheme;
+
+  bool get _isWord => label == 'Fizz' || label == 'Buzz' || label == 'FizzBuzz';
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: _isWord ? 0.15 : 0.07),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: color.withValues(alpha: _isWord ? 0.5 : 0.2),
+        ),
+      ),
+      child: Text(
+        label,
+        style: textTheme.labelMedium?.copyWith(
+          color: color,
+          fontWeight: _isWord ? FontWeight.w700 : FontWeight.w500,
         ),
       ),
     );

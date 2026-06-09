@@ -1,5 +1,5 @@
 name: logic_lab
-description: A production-ready Flutter app demonstrating number reversal logic.
+description: Fauzi — Senior Mobile Application Engineer Portfolio
 publish_to: "none"
 version: 1.0.0+1
 
@@ -10,6 +10,7 @@ dependencies:
   flutter:
     sdk: flutter
   responsive_framework: ^1.4.0
+  google_fonts: ^6.2.1
 
 dev_dependencies:
   flutter_test:
