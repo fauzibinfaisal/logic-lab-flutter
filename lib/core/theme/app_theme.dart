@@ -1,26 +1,46 @@
-/// Application-wide theme configuration.
-///
-/// Uses Material 3 design system with a custom seed color palette.
 library;
 
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
-/// Returns the [ThemeData] for the application.
+const _kAccent = Color(0xFF00D4FF);
+const _kBackground = Color(0xFF080D1A);
+const _kSurface = Color(0xFF0F1729);
+const _kSurfaceVariant = Color(0xFF162040);
+const _kOutline = Color(0xFF1E2D4A);
+
 ThemeData buildAppTheme() {
-  const seedColor = Color(0xFF5C6BC0); // Indigo 400
-
-  return ThemeData(
+  final base = ThemeData(
     useMaterial3: true,
+    brightness: Brightness.dark,
     colorScheme: ColorScheme.fromSeed(
-      seedColor: seedColor,
-      brightness: Brightness.light,
+      seedColor: _kAccent,
+      brightness: Brightness.dark,
+      surface: _kBackground,
+      primary: _kAccent,
+    ).copyWith(
+      surface: _kBackground,
+      surfaceContainerLow: _kSurface,
+      surfaceContainerHigh: _kSurfaceVariant,
+      outline: _kOutline,
+      outlineVariant: _kOutline,
     ),
-    fontFamily: 'Roboto',
-    cardTheme: const CardThemeData(
+    scaffoldBackgroundColor: _kBackground,
+    cardTheme: CardThemeData(
       clipBehavior: Clip.antiAlias,
+      color: _kSurface,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(color: _kOutline),
+      ),
     ),
-    inputDecorationTheme: const InputDecorationTheme(
-      border: InputBorder.none,
+  );
+
+  return base.copyWith(
+    textTheme: GoogleFonts.interTextTheme(base.textTheme).apply(
+      bodyColor: Colors.white,
+      displayColor: Colors.white,
     ),
   );
 }

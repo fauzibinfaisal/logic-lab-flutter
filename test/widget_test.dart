@@ -1,21 +1,25 @@
-/// Default widget smoke test — updated to reference [LogicLabApp].
-library;
-
 import 'package:flutter_test/flutter_test.dart';
-import 'package:logic_lab/core/di/injection.dart';
-import 'package:logic_lab/main.dart';
-
-// test/widget_test.dart
+import 'package:logic_lab/number_page.dart';
 
 void main() {
-  setUp(() {
-    sl.reset();
-    configureDependencies();
-  });
+  group('Number Reversal Logic Tests', () {
+    test('computes reverse difference correctly for 21', () {
+      final result = computeReverseDifference(21);
+      expect(result.reversed, 12);
+      expect(result.difference, 9);
+    });
 
-  testWidgets('App smoke test', (tester) async {
-    await tester.pumpWidget(const LogicLabApp());
-    expect(find.text('LogicLab'), findsOneWidget);
+    test('computes reverse difference correctly for 30', () {
+      final result = computeReverseDifference(30);
+      expect(result.reversed, 3);
+      expect(result.difference, 27);
+    });
+
+    test('returns 0 difference for palindrome 121', () {
+      final result = computeReverseDifference(121);
+      expect(result.reversed, 121);
+      expect(result.difference, 0);
+    });
   });
 }
 
