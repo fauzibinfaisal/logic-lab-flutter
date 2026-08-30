@@ -26,6 +26,8 @@
 	<string>$(PRODUCT_COPYRIGHT)</string>
 	<key>NSMainNibFile</key>
 	<string>MainMenu</string>
+	<key>NSLocationUsageDescription</key>
+	<string>QIBLA App uses your location to calculate the direction of the Kaaba.</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
 </dict>
