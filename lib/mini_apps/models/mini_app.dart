@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 
-enum MiniAppCategory { traveling }
+enum MiniAppCategory { traveling, eduFun }
 
 class MiniAppDefinition {
   final String id;
   final String title;
   final String description;
+  final String eyebrow;
   final MiniAppCategory category;
   final IconData icon;
   final Color accentColor;
@@ -14,6 +15,7 @@ class MiniAppDefinition {
     required this.id,
     required this.title,
     required this.description,
+    required this.eyebrow,
     required this.category,
     required this.icon,
     required this.accentColor,

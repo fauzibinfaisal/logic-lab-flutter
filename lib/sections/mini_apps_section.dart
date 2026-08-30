@@ -261,14 +261,14 @@ class _MiniAppCardState extends State<_MiniAppCard> {
               ),
               child: Row(
                 children: [
-                  _CompassPreview(accent: widget.app.accentColor),
+                  _AppPreview(app: widget.app),
                   const SizedBox(width: 18),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'TRAVEL UTILITY',
+                          widget.app.eyebrow,
                           style: tt.labelSmall?.copyWith(
                             color: widget.app.accentColor,
                             fontWeight: FontWeight.w700,
@@ -323,10 +323,10 @@ class _MiniAppCardState extends State<_MiniAppCard> {
   }
 }
 
-class _CompassPreview extends StatelessWidget {
-  final Color accent;
+class _AppPreview extends StatelessWidget {
+  final MiniAppDefinition app;
 
-  const _CompassPreview({required this.accent});
+  const _AppPreview({required this.app});
 
   @override
   Widget build(BuildContext context) {
@@ -336,40 +336,76 @@ class _CompassPreview extends StatelessWidget {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: const Color(0xFF08121D),
-        border: Border.all(color: accent.withValues(alpha: 0.45)),
+        border: Border.all(color: app.accentColor.withValues(alpha: 0.45)),
         boxShadow: [
-          BoxShadow(color: accent.withValues(alpha: 0.12), blurRadius: 22),
+          BoxShadow(
+            color: app.accentColor.withValues(alpha: 0.12),
+            blurRadius: 22,
+          ),
         ],
       ),
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Text(
-            'N',
-            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: Colors.white38,
-                  fontWeight: FontWeight.w700,
+      child: app.id == 'qibla'
+          ? Stack(
+              alignment: Alignment.center,
+              children: [
+                Text(
+                  'N',
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: Colors.white38,
+                        fontWeight: FontWeight.w700,
+                      ),
                 ),
-          ),
-          Transform.rotate(
-            angle: -0.8,
-            child: Icon(Icons.navigation_rounded, size: 48, color: accent),
-          ),
-          Positioned(
-            right: 11,
-            bottom: 15,
-            child: Container(
-              width: 14,
-              height: 14,
-              decoration: BoxDecoration(
-                color: const Color(0xFF111111),
-                border: Border.all(color: const Color(0xFFD8B45B)),
-                borderRadius: BorderRadius.circular(2),
-              ),
+                Transform.rotate(
+                  angle: -0.8,
+                  child: Icon(
+                    Icons.navigation_rounded,
+                    size: 48,
+                    color: app.accentColor,
+                  ),
+                ),
+                Positioned(
+                  right: 11,
+                  bottom: 15,
+                  child: Container(
+                    width: 14,
+                    height: 14,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF111111),
+                      border: Border.all(color: const Color(0xFFD8B45B)),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+              ],
+            )
+          : Stack(
+              alignment: Alignment.center,
+              children: [
+                Icon(app.icon, size: 45, color: app.accentColor),
+                Positioned(
+                  top: 9,
+                  right: 11,
+                  child: Text(
+                    '7',
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          color: const Color(0xFF8BE9FD),
+                          fontWeight: FontWeight.w900,
+                        ),
+                  ),
+                ),
+                Positioned(
+                  left: 11,
+                  bottom: 9,
+                  child: Text(
+                    '+',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          color: const Color(0xFFFF7AA2),
+                          fontWeight: FontWeight.w900,
+                        ),
+                  ),
+                ),
+              ],
             ),
-          ),
-        ],
-      ),
     );
   }
 }

@@ -1,0 +1,13 @@
+name = "logic-lab-leaderboard"
+main = "src/index.ts"
+compatibility_date = "2026-08-28"
+
+[vars]
+# Origins are comma-separated. Add the exact GitHub Pages origin before deploy.
+ALLOWED_ORIGINS = "http://localhost:8766,http://127.0.0.1:8766,https://fauzibinfaisal.github.io"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "logic-lab-leaderboard"
+database_id = "f63f40f5-2bb0-4ff7-bc96-0ebd3469b897"
+migrations_dir = "migrations"
