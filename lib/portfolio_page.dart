@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:logic_lab/mini_apps/edu_fun/edu_fun_page.dart';
 import 'package:logic_lab/mini_apps/models/mini_app.dart';
 import 'package:logic_lab/mini_apps/qibla/qibla_page.dart';
 import 'package:logic_lab/sections/about_section.dart';
@@ -74,11 +75,19 @@ class _PortfolioPageState extends State<PortfolioPage> {
   }
 
   void _openMiniApp(MiniAppDefinition app) {
-    if (app.id != 'qibla') return;
+    final Widget page;
+    switch (app.id) {
+      case 'qibla':
+        page = const QiblaPage();
+      case 'number-adventure':
+        page = const EduFunPage();
+      default:
+        return;
+    }
 
     Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (_) => const QiblaPage(),
+        builder: (_) => page,
         settings: RouteSettings(name: '/mini-apps/${app.id}'),
       ),
     );
