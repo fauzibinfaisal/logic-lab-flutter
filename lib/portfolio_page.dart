@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:logic_lab/mini_apps/edu_fun/edu_fun_page.dart';
+import 'package:logic_lab/mini_apps/edu_fun/edu_fun_page.dart'
+    deferred as edu_fun;
+import 'package:logic_lab/mini_apps/memory_quest/memory_quest_page.dart'
+    deferred as memory_quest;
 import 'package:logic_lab/mini_apps/models/mini_app.dart';
-import 'package:logic_lab/mini_apps/qibla/qibla_page.dart';
+import 'package:logic_lab/mini_apps/qibla/qibla_page.dart' deferred as qibla;
 import 'package:logic_lab/sections/about_section.dart';
 import 'package:logic_lab/sections/achievements_section.dart';
 import 'package:logic_lab/sections/education_section.dart';
@@ -75,19 +78,9 @@ class _PortfolioPageState extends State<PortfolioPage> {
   }
 
   void _openMiniApp(MiniAppDefinition app) {
-    final Widget page;
-    switch (app.id) {
-      case 'qibla':
-        page = const QiblaPage();
-      case 'number-adventure':
-        page = const EduFunPage();
-      default:
-        return;
-    }
-
     Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (_) => page,
+        builder: (_) => _DeferredMiniAppPage(app: app),
         settings: RouteSettings(name: '/mini-apps/${app.id}'),
       ),
     );
@@ -149,6 +142,97 @@ class _PortfolioPageState extends State<PortfolioPage> {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _DeferredMiniAppPage extends StatefulWidget {
+  final MiniAppDefinition app;
+
+  const _DeferredMiniAppPage({required this.app});
+
+  @override
+  State<_DeferredMiniAppPage> createState() => _DeferredMiniAppPageState();
+}
+
+class _DeferredMiniAppPageState extends State<_DeferredMiniAppPage> {
+  late Future<void> _loadFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadFuture = _load();
+  }
+
+  Future<void> _load() => switch (widget.app.id) {
+        'qibla' => qibla.loadLibrary(),
+        'number-adventure' => edu_fun.loadLibrary(),
+        'memory-quest' => memory_quest.loadLibrary(),
+        _ => Future<void>.error('Unknown mini app: ${widget.app.id}'),
+      };
+
+  Widget _loadedApp() => switch (widget.app.id) {
+        'qibla' => qibla.QiblaPage(),
+        'number-adventure' => edu_fun.EduFunPage(),
+        'memory-quest' => memory_quest.MemoryQuestPage(),
+        _ => const SizedBox.shrink(),
+      };
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<void>(
+      future: _loadFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.done &&
+            !snapshot.hasError) {
+          return _loadedApp();
+        }
+
+        return Scaffold(
+          backgroundColor: const Color(0xFF080D1A),
+          body: SafeArea(
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(28),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (snapshot.hasError)
+                      Icon(
+                        Icons.cloud_off_rounded,
+                        color: widget.app.accentColor,
+                        size: 44,
+                      )
+                    else
+                      CircularProgressIndicator(
+                        color: widget.app.accentColor,
+                      ),
+                    const SizedBox(height: 22),
+                    Text(
+                      snapshot.hasError
+                          ? 'Could not load ${widget.app.title}'
+                          : 'Loading ${widget.app.title}…',
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w800,
+                          ),
+                    ),
+                    if (snapshot.hasError) ...[
+                      const SizedBox(height: 16),
+                      FilledButton.icon(
+                        onPressed: () => setState(() => _loadFuture = _load()),
+                        icon: const Icon(Icons.refresh_rounded),
+                        label: const Text('Try again'),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

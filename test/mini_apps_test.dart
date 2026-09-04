@@ -53,6 +53,7 @@ void main() {
     expect(find.text('QIBLA App'), findsOneWidget);
     expect(find.text('Edu Fun'), findsOneWidget);
     expect(find.text('Number Adventure'), findsOneWidget);
+    expect(find.text('Memory Quest'), findsOneWidget);
 
     await tester.tap(find.text('QIBLA App'));
     await tester.pumpAndSettle();

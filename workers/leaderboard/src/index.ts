@@ -23,6 +23,30 @@ interface ScoreRow {
   created_at: number;
 }
 
+interface MemoryScoreSubmission {
+  sessionId: string;
+  nickname: string;
+  score: number;
+  stageReached: number;
+  pairsFound: number;
+  accuracyPermille: number;
+  remainingTimeMs: number;
+  fastestStageMs: number;
+  durationMs: number;
+}
+
+interface MemoryScoreRow {
+  nickname: string;
+  score: number;
+  stage_reached: number;
+  pairs_found: number;
+  accuracy_permille: number;
+  remaining_time_ms: number;
+  fastest_stage_ms: number;
+  duration_ms: number;
+  created_at: number;
+}
+
 const jsonHeaders = {
   "Content-Type": "application/json; charset=utf-8",
   "X-Content-Type-Options": "nosniff",
@@ -51,6 +75,12 @@ export default {
       }
       if (request.method === "GET" && url.pathname === "/api/v1/leaderboard") {
         return getLeaderboard(url, env, corsHeaders);
+      }
+      if (request.method === "POST" && url.pathname === "/api/v1/memory/scores") {
+        return submitMemoryScore(request, env, corsHeaders);
+      }
+      if (request.method === "GET" && url.pathname === "/api/v1/memory/leaderboard") {
+        return getMemoryLeaderboard(url, env, corsHeaders);
       }
       return json({ error: "Not found." }, 404, corsHeaders);
     } catch (error) {
@@ -103,6 +133,111 @@ async function submitScore(
     .run();
 
   return json({ accepted: result.meta.changes > 0 }, 202, corsHeaders);
+}
+
+async function submitMemoryScore(
+  request: Request,
+  env: Env,
+  corsHeaders: Headers,
+): Promise<Response> {
+  const contentLength = Number(request.headers.get("content-length") ?? "0");
+  if (contentLength > 2048) {
+    return json({ error: "Request is too large." }, 413, corsHeaders);
+  }
+
+  let raw: unknown;
+  try {
+    raw = await request.json();
+  } catch {
+    return json({ error: "Invalid JSON." }, 400, corsHeaders);
+  }
+  const validation = validateMemorySubmission(raw);
+  if (!validation.ok) {
+    return json({ error: validation.error }, 400, corsHeaders);
+  }
+
+  const score = validation.value;
+  const result = await env.DB.prepare(
+    `INSERT INTO memory_scores (
+      session_id, nickname, score, stage_reached, pairs_found,
+      accuracy_permille, remaining_time_ms, fastest_stage_ms,
+      duration_ms, created_at
+    ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)
+    ON CONFLICT(session_id) DO NOTHING`,
+  )
+    .bind(
+      score.sessionId,
+      score.nickname,
+      score.score,
+      score.stageReached,
+      score.pairsFound,
+      score.accuracyPermille,
+      score.remainingTimeMs,
+      score.fastestStageMs,
+      score.durationMs,
+      Date.now(),
+    )
+    .run();
+
+  return json({ accepted: result.meta.changes > 0 }, 202, corsHeaders);
+}
+
+async function getMemoryLeaderboard(
+  url: URL,
+  env: Env,
+  corsHeaders: Headers,
+): Promise<Response> {
+  const period = url.searchParams.get("period") ?? "today";
+  const requestedLimit = Number(url.searchParams.get("limit") ?? "50");
+  const limit = Number.isInteger(requestedLimit)
+    ? Math.min(Math.max(requestedLimit, 1), 100)
+    : 50;
+  if (!["today", "week", "all"].includes(period)) {
+    return json({ error: "Invalid leaderboard filters." }, 400, corsHeaders);
+  }
+
+  const result = await env.DB.prepare(
+    `WITH player_best AS (
+      SELECT
+        nickname, score, stage_reached, pairs_found, accuracy_permille,
+        remaining_time_ms, fastest_stage_ms, duration_ms, created_at,
+        ROW_NUMBER() OVER (
+          PARTITION BY lower(nickname)
+          ORDER BY score DESC, stage_reached DESC, pairs_found DESC,
+            accuracy_permille DESC, remaining_time_ms DESC,
+            CASE WHEN fastest_stage_ms = 0 THEN 3600001 ELSE fastest_stage_ms END ASC,
+            created_at ASC
+        ) AS attempt_rank
+      FROM memory_scores
+      WHERE created_at >= ?1
+    )
+    SELECT nickname, score, stage_reached, pairs_found, accuracy_permille,
+           remaining_time_ms, fastest_stage_ms, duration_ms, created_at
+    FROM player_best
+    WHERE attempt_rank = 1
+    ORDER BY score DESC, stage_reached DESC, pairs_found DESC,
+      accuracy_permille DESC, remaining_time_ms DESC,
+      CASE WHEN fastest_stage_ms = 0 THEN 3600001 ELSE fastest_stage_ms END ASC,
+      created_at ASC
+    LIMIT ?2`,
+  )
+    .bind(periodStart(period), limit)
+    .all<MemoryScoreRow>();
+
+  const entries = result.results.map((row, index) => ({
+    rank: index + 1,
+    nickname: row.nickname,
+    score: row.score,
+    stageReached: row.stage_reached,
+    pairsFound: row.pairs_found,
+    accuracyPermille: row.accuracy_permille,
+    remainingTimeMs: row.remaining_time_ms,
+    fastestStageMs: row.fastest_stage_ms,
+    durationMs: row.duration_ms,
+    completedAt: new Date(row.created_at).toISOString(),
+  }));
+
+  return json({ period, entries }, 200, corsHeaders);
 }
 
 async function getLeaderboard(
@@ -199,6 +334,55 @@ function validateSubmission(
       completionTimeMs: value.completionTimeMs as number,
       correctAnswers: value.correctAnswers as number,
       bestStreak: value.bestStreak as number,
+    },
+  };
+}
+
+function validateMemorySubmission(
+  raw: unknown,
+): { ok: true; value: MemoryScoreSubmission } | { ok: false; error: string } {
+  if (typeof raw !== "object" || raw === null || Array.isArray(raw)) {
+    return { ok: false, error: "Body must be an object." };
+  }
+  const value = raw as Record<string, unknown>;
+  const nickname = typeof value.nickname === "string" ? value.nickname.trim() : "";
+  const sessionId = typeof value.sessionId === "string" ? value.sessionId : "";
+
+  if (!/^[\p{L}\p{N}_ -]{1,16}$/u.test(nickname)) {
+    return { ok: false, error: "Nickname must be 1–16 safe characters." };
+  }
+  if (!/^[A-Za-z0-9-]{16,64}$/.test(sessionId)) {
+    return { ok: false, error: "Invalid session identifier." };
+  }
+
+  const fields: Array<[keyof MemoryScoreSubmission, number, number]> = [
+    ["score", 0, 100000000],
+    ["stageReached", 1, 999],
+    ["pairsFound", 0, 10000],
+    ["accuracyPermille", 0, 1000],
+    ["remainingTimeMs", 0, 3600000],
+    ["fastestStageMs", 0, 3600000],
+    ["durationMs", 1000, 86400000],
+  ];
+  for (const [field, minimum, maximum] of fields) {
+    const fieldValue = value[field];
+    if (!Number.isInteger(fieldValue) || (fieldValue as number) < minimum || (fieldValue as number) > maximum) {
+      return { ok: false, error: `Invalid ${field}.` };
+    }
+  }
+
+  return {
+    ok: true,
+    value: {
+      sessionId,
+      nickname,
+      score: value.score as number,
+      stageReached: value.stageReached as number,
+      pairsFound: value.pairsFound as number,
+      accuracyPermille: value.accuracyPermille as number,
+      remainingTimeMs: value.remainingTimeMs as number,
+      fastestStageMs: value.fastestStageMs as number,
+      durationMs: value.durationMs as number,
     },
   };
 }
