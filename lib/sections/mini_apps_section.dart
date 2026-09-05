@@ -344,68 +344,104 @@ class _AppPreview extends StatelessWidget {
           ),
         ],
       ),
-      child: app.id == 'qibla'
-          ? Stack(
-              alignment: Alignment.center,
-              children: [
-                Text(
-                  'N',
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: Colors.white38,
-                        fontWeight: FontWeight.w700,
-                      ),
+      child: switch (app.id) {
+        'qibla' => Stack(
+            alignment: Alignment.center,
+            children: [
+              Text(
+                'N',
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: Colors.white38,
+                      fontWeight: FontWeight.w700,
+                    ),
+              ),
+              Transform.rotate(
+                angle: -0.8,
+                child: Icon(
+                  Icons.navigation_rounded,
+                  size: 48,
+                  color: app.accentColor,
                 ),
-                Transform.rotate(
-                  angle: -0.8,
-                  child: Icon(
-                    Icons.navigation_rounded,
-                    size: 48,
-                    color: app.accentColor,
+              ),
+              Positioned(
+                right: 11,
+                bottom: 15,
+                child: Container(
+                  width: 14,
+                  height: 14,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF111111),
+                    border: Border.all(color: const Color(0xFFD8B45B)),
+                    borderRadius: BorderRadius.circular(2),
                   ),
                 ),
-                Positioned(
-                  right: 11,
-                  bottom: 15,
+              ),
+            ],
+          ),
+        'memory-quest' => Stack(
+            alignment: Alignment.center,
+            children: [
+              for (final item in const [
+                (Alignment(-0.45, -0.45), '🐼'),
+                (Alignment(0.45, -0.45), '?'),
+                (Alignment(-0.45, 0.45), '?'),
+                (Alignment(0.45, 0.45), '🐼'),
+              ])
+                Align(
+                  alignment: item.$1,
                   child: Container(
-                    width: 14,
-                    height: 14,
+                    width: 29,
+                    height: 29,
+                    alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF111111),
-                      border: Border.all(color: const Color(0xFFD8B45B)),
-                      borderRadius: BorderRadius.circular(2),
+                      color: item.$2 == '?'
+                          ? app.accentColor.withValues(alpha: 0.18)
+                          : const Color(0xFF253E58),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: app.accentColor.withValues(alpha: 0.45),
+                      ),
+                    ),
+                    child: Text(
+                      item.$2,
+                      style: TextStyle(
+                        color: app.accentColor,
+                        fontWeight: FontWeight.w900,
+                      ),
                     ),
                   ),
                 ),
-              ],
-            )
-          : Stack(
-              alignment: Alignment.center,
-              children: [
-                Icon(app.icon, size: 45, color: app.accentColor),
-                Positioned(
-                  top: 9,
-                  right: 11,
-                  child: Text(
-                    '7',
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                          color: const Color(0xFF8BE9FD),
-                          fontWeight: FontWeight.w900,
-                        ),
-                  ),
+            ],
+          ),
+        _ => Stack(
+            alignment: Alignment.center,
+            children: [
+              Icon(app.icon, size: 45, color: app.accentColor),
+              Positioned(
+                top: 9,
+                right: 11,
+                child: Text(
+                  '7',
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: const Color(0xFF8BE9FD),
+                        fontWeight: FontWeight.w900,
+                      ),
                 ),
-                Positioned(
-                  left: 11,
-                  bottom: 9,
-                  child: Text(
-                    '+',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color: const Color(0xFFFF7AA2),
-                          fontWeight: FontWeight.w900,
-                        ),
-                  ),
+              ),
+              Positioned(
+                left: 11,
+                bottom: 9,
+                child: Text(
+                  '+',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: const Color(0xFFFF7AA2),
+                        fontWeight: FontWeight.w900,
+                      ),
                 ),
-              ],
-            ),
+              ),
+            ],
+          ),
+      },
     );
   }
 }

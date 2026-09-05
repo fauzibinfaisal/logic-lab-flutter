@@ -1,9 +1,9 @@
 # Logic Lab Leaderboard Worker
 
-Cloudflare Worker + D1 backend for the Number Adventure leaderboard. It stores
-only a nickname, age category, score, completion duration, game stats, and the
-server-generated completion timestamp. It never accepts or stores location,
-email, birth date, or other child-identifying data.
+Cloudflare Worker + D1 backend for the Number Adventure and Memory Quest
+leaderboards. It stores only nickname and game-result metrics together with a
+server-generated timestamp. It never accepts or stores location, email, birth
+date, or other child-identifying data.
 
 ## Setup
 
@@ -39,6 +39,8 @@ flutter run -d chrome \
 
 - `POST /api/v1/scores` — validates and submits one completed session.
 - `GET /api/v1/leaderboard?age=6&period=today&limit=50` — returns ranked player bests.
+- `POST /api/v1/memory/scores` — submits a completed Memory Quest Solo run.
+- `GET /api/v1/memory/leaderboard?period=today&limit=50` — returns Memory Champions.
 - `GET /health` — health check.
 
 Ranking order is score descending, completion time ascending, then the earlier

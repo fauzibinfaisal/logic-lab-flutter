@@ -23,6 +23,17 @@ const numberAdventureMiniApp = MiniAppDefinition(
   accentColor: Color(0xFFFFC857),
 );
 
+const memoryQuestMiniApp = MiniAppDefinition(
+  id: 'memory-quest',
+  title: 'Memory Quest',
+  description:
+      'Remember the cards, find every pair, and challenge a friend in a colorful memory adventure.',
+  eyebrow: 'MEMORY GAME',
+  category: MiniAppCategory.eduFun,
+  icon: Icons.grid_view_rounded,
+  accentColor: Color(0xFF7EE8FA),
+);
+
 const miniAppCatalog = [
   MiniAppCategoryDefinition(
     category: MiniAppCategory.traveling,
@@ -36,6 +47,6 @@ const miniAppCatalog = [
     title: 'Edu Fun',
     description: 'Playful learning experiences for curious young minds.',
     icon: Icons.auto_awesome_rounded,
-    apps: [numberAdventureMiniApp],
+    apps: [numberAdventureMiniApp, memoryQuestMiniApp],
   ),
 ];
