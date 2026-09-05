@@ -6,9 +6,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:logic_lab/mini_apps/edu_fun/data/leaderboard_api_service.dart';
+import 'package:logic_lab/mini_apps/edu_fun/data/leaderboard_repository.dart';
 import 'package:logic_lab/mini_apps/edu_fun/logic/game_engine.dart';
 import 'package:logic_lab/mini_apps/edu_fun/logic/question_factory.dart';
 import 'package:logic_lab/mini_apps/edu_fun/models/edu_fun_models.dart';
+import 'package:logic_lab/mini_apps/edu_fun/screens/leaderboard_screen.dart';
 import 'package:logic_lab/mini_apps/edu_fun/screens/profile_screen.dart';
 import 'package:logic_lab/mini_apps/edu_fun/screens/welcome_screen.dart';
 
@@ -123,6 +125,60 @@ void main() {
     expect(entries, hasLength(1));
     expect(entries.first.rank, 1);
     expect(entries.first.nickname, 'Naya');
+  });
+
+  testWidgets('leaderboard opens All Time so older scores stay visible', (
+    tester,
+  ) async {
+    late Uri requestedUri;
+    final client = MockClient((request) async {
+      requestedUri = request.url;
+      return http.Response(
+        jsonEncode({
+          'age': 5,
+          'period': 'all',
+          'entries': [
+            {
+              'rank': 1,
+              'nickname': 'Fauzi',
+              'age': 5,
+              'score': 1639,
+              'completionTimeMs': 63000,
+              'correctAnswers': 10,
+              'bestStreak': 10,
+              'completedAt': '2026-08-31T13:30:15.968Z',
+            },
+          ],
+        }),
+        200,
+      );
+    });
+    final repository = LeaderboardRepository(
+      api: LeaderboardApiService(
+        baseUrl: 'https://leaderboard.example.test',
+        client: client,
+      ),
+    );
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: ThemeData.dark(useMaterial3: true),
+        home: Scaffold(
+          body: EduLeaderboardScreen(
+            repository: repository,
+            initialAge: 5,
+            onBack: () {},
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(requestedUri.queryParameters['period'], 'all');
+    expect(find.text('ALL-TIME CHAMPIONS'), findsOneWidget);
+    expect(find.text('Fauzi'), findsOneWidget);
+    expect(find.text('⭐ 1639'), findsOneWidget);
   });
 
   testWidgets('welcome and player setup stay usable on a small phone', (

@@ -23,8 +23,14 @@ class EduLeaderboardScreen extends StatefulWidget {
 
 class _EduLeaderboardScreenState extends State<EduLeaderboardScreen> {
   late int _age;
-  LeaderboardPeriod _period = LeaderboardPeriod.today;
+  LeaderboardPeriod _period = LeaderboardPeriod.allTime;
   late Future<List<LeaderboardEntry>> _entries;
+
+  static const _periodOrder = [
+    LeaderboardPeriod.allTime,
+    LeaderboardPeriod.week,
+    LeaderboardPeriod.today,
+  ];
 
   @override
   void initState() {
@@ -38,8 +44,8 @@ class _EduLeaderboardScreenState extends State<EduLeaderboardScreen> {
     return EduScreen(
       child: Column(
         children: [
-          const EduSectionTitle(
-            eyebrow: "TODAY'S CHAMPIONS",
+          EduSectionTitle(
+            eyebrow: _periodEyebrow(_period),
             title: 'Leaderboard 🏆',
             subtitle: 'Every age has its own fair Number Adventure ranking.',
           ),
@@ -74,7 +80,7 @@ class _EduLeaderboardScreenState extends State<EduLeaderboardScreen> {
                         alignment: WrapAlignment.center,
                         spacing: 8,
                         children: [
-                          for (final period in LeaderboardPeriod.values)
+                          for (final period in _periodOrder)
                             ChoiceChip(
                               label: Text(_periodLabel(period)),
                               selected: _period == period,
@@ -180,6 +186,12 @@ class _EduLeaderboardScreenState extends State<EduLeaderboardScreen> {
         LeaderboardPeriod.today => 'Today',
         LeaderboardPeriod.week => 'This Week',
         LeaderboardPeriod.allTime => 'All Time',
+      };
+
+  String _periodEyebrow(LeaderboardPeriod period) => switch (period) {
+        LeaderboardPeriod.today => "TODAY'S CHAMPIONS",
+        LeaderboardPeriod.week => "THIS WEEK'S CHAMPIONS",
+        LeaderboardPeriod.allTime => 'ALL-TIME CHAMPIONS',
       };
 }
 
