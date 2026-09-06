@@ -71,6 +71,10 @@ void main() {
     expect(find.byType(QiblaPage), findsOneWidget);
     expect(find.text('Use my location'), findsOneWidget);
     expect(find.text('82 visits'), findsOneWidget);
+    expect(
+      find.textContaining('On Windows or macOS'),
+      findsOneWidget,
+    );
 
     await tester.tap(find.byTooltip('Back to Mini Apps').first);
     await tester.pumpAndSettle();
