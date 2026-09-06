@@ -9,17 +9,22 @@ import 'package:logic_lab/mini_apps/edu_fun/screens/profile_screen.dart';
 import 'package:logic_lab/mini_apps/edu_fun/screens/results_screen.dart';
 import 'package:logic_lab/mini_apps/edu_fun/screens/welcome_screen.dart';
 import 'package:logic_lab/mini_apps/edu_fun/widgets/edu_components.dart';
+import 'package:logic_lab/visit_counter/widgets/visit_count_badge.dart';
 
 enum _EduView { loading, welcome, profile, home, game, results, leaderboard }
 
 class EduFunPage extends StatefulWidget {
   final EduFunRepository? progressRepository;
   final LeaderboardRepository? leaderboardRepository;
+  final int? visitCount;
+  final bool visitCountLoading;
 
   const EduFunPage({
     super.key,
     this.progressRepository,
     this.leaderboardRepository,
+    this.visitCount,
+    this.visitCountLoading = false,
   });
 
   @override
@@ -73,6 +78,8 @@ class _EduFunPageState extends State<EduFunPage> {
             children: [
               _EduTopBar(
                 age: _player?.age,
+                visitCount: widget.visitCount,
+                visitCountLoading: widget.visitCountLoading,
                 onExit: () => Navigator.of(context).pop(),
               ),
               Expanded(
@@ -208,9 +215,16 @@ class _EduFunPageState extends State<EduFunPage> {
 
 class _EduTopBar extends StatelessWidget {
   final int? age;
+  final int? visitCount;
+  final bool visitCountLoading;
   final VoidCallback onExit;
 
-  const _EduTopBar({required this.age, required this.onExit});
+  const _EduTopBar({
+    required this.age,
+    required this.visitCount,
+    required this.visitCountLoading,
+    required this.onExit,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -251,19 +265,29 @@ class _EduTopBar extends StatelessWidget {
                   ),
             ),
           ),
+          VisitCountBadge(
+            count: visitCount,
+            loading: visitCountLoading,
+            color: EduColors.yellow,
+            compact: true,
+          ),
           if (age != null)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              decoration: BoxDecoration(
-                color: EduColors.cyan.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(99),
-              ),
-              child: Text(
-                'AGE $age',
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: EduColors.cyan,
-                      fontWeight: FontWeight.w900,
-                    ),
+            Padding(
+              padding: const EdgeInsets.only(left: 6),
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: EduColors.cyan.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(99),
+                ),
+                child: Text(
+                  'AGE $age',
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: EduColors.cyan,
+                        fontWeight: FontWeight.w900,
+                      ),
+                ),
               ),
             ),
         ],

@@ -47,6 +47,18 @@ interface MemoryScoreRow {
   created_at: number;
 }
 
+interface VisitCounterRow {
+  scope: string;
+  visit_count: number;
+}
+
+const visitScopes = new Set([
+  "site",
+  "qibla",
+  "number-adventure",
+  "memory-quest",
+]);
+
 const jsonHeaders = {
   "Content-Type": "application/json; charset=utf-8",
   "X-Content-Type-Options": "nosniff",
@@ -67,6 +79,7 @@ export default {
     }
 
     try {
+      // Keep workers/leaderboard/API.md in sync whenever a route changes.
       if (request.method === "GET" && url.pathname === "/health") {
         return json({ status: "ok" }, 200, corsHeaders);
       }
@@ -82,6 +95,12 @@ export default {
       if (request.method === "GET" && url.pathname === "/api/v1/memory/leaderboard") {
         return getMemoryLeaderboard(url, env, corsHeaders);
       }
+      if (request.method === "POST" && url.pathname === "/api/v1/visits") {
+        return recordVisit(request, env, corsHeaders);
+      }
+      if (request.method === "GET" && url.pathname === "/api/v1/visits") {
+        return getVisitCounts(env, corsHeaders);
+      }
       return json({ error: "Not found." }, 404, corsHeaders);
     } catch (error) {
       console.error("Unhandled leaderboard error", error);
@@ -89,6 +108,71 @@ export default {
     }
   },
 };
+
+async function recordVisit(
+  request: Request,
+  env: Env,
+  corsHeaders: Headers,
+): Promise<Response> {
+  const contentLength = Number(request.headers.get("content-length") ?? "0");
+  if (contentLength > 256) {
+    return json({ error: "Request is too large." }, 413, corsHeaders);
+  }
+
+  let raw: unknown;
+  try {
+    raw = await request.json();
+  } catch {
+    return json({ error: "Invalid JSON." }, 400, corsHeaders);
+  }
+
+  const scope = visitScopeFrom(raw);
+  if (scope === null) {
+    return json({ error: "Invalid visit scope." }, 400, corsHeaders);
+  }
+
+  await env.DB.prepare(
+    `INSERT INTO visit_counters(scope, visit_count, updated_at)
+     VALUES (?1, 1, ?2)
+     ON CONFLICT(scope) DO UPDATE SET
+       visit_count = visit_count + 1,
+       updated_at = excluded.updated_at`,
+  )
+    .bind(scope, Date.now())
+    .run();
+
+  return visitCountsResponse(env, corsHeaders);
+}
+
+async function getVisitCounts(
+  env: Env,
+  corsHeaders: Headers,
+): Promise<Response> {
+  return visitCountsResponse(env, corsHeaders);
+}
+
+async function visitCountsResponse(
+  env: Env,
+  corsHeaders: Headers,
+): Promise<Response> {
+  const result = await env.DB.prepare(
+    `SELECT scope, visit_count
+     FROM visit_counters`,
+  ).all<VisitCounterRow>();
+  const counts = Object.fromEntries(
+    [...visitScopes].map((scope) => [scope, 0]),
+  ) as Record<string, number>;
+  for (const row of result.results) {
+    if (visitScopes.has(row.scope)) counts[row.scope] = row.visit_count;
+  }
+  return json({ counts }, 200, corsHeaders);
+}
+
+function visitScopeFrom(raw: unknown): string | null {
+  if (typeof raw !== "object" || raw === null || Array.isArray(raw)) return null;
+  const scope = (raw as Record<string, unknown>).scope;
+  return typeof scope === "string" && visitScopes.has(scope) ? scope : null;
+}
 
 async function submitScore(
   request: Request,

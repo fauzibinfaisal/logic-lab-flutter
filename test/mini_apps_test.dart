@@ -38,8 +38,15 @@ void main() {
           builder: (context) => Scaffold(
             body: SingleChildScrollView(
               child: MiniAppsSection(
+                visitCounts: const {
+                  'qibla': 82,
+                  'number-adventure': 315,
+                  'memory-quest': 144,
+                },
                 onOpenApp: (_) => Navigator.of(context).push(
-                  MaterialPageRoute<void>(builder: (_) => const QiblaPage()),
+                  MaterialPageRoute<void>(
+                    builder: (_) => const QiblaPage(visitCount: 82),
+                  ),
                 ),
               ),
             ),
@@ -54,12 +61,16 @@ void main() {
     expect(find.text('Edu Fun'), findsOneWidget);
     expect(find.text('Number Adventure'), findsOneWidget);
     expect(find.text('Memory Quest'), findsOneWidget);
+    expect(find.text('82 visits'), findsOneWidget);
+    expect(find.text('315 visits'), findsOneWidget);
+    expect(find.text('144 visits'), findsOneWidget);
 
     await tester.tap(find.text('QIBLA App'));
     await tester.pumpAndSettle();
 
     expect(find.byType(QiblaPage), findsOneWidget);
     expect(find.text('Use my location'), findsOneWidget);
+    expect(find.text('82 visits'), findsOneWidget);
 
     await tester.tap(find.byTooltip('Back to Mini Apps').first);
     await tester.pumpAndSettle();

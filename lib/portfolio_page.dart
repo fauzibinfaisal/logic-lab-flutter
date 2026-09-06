@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:logic_lab/mini_apps/edu_fun/edu_fun_page.dart'
     deferred as edu_fun;
@@ -14,9 +16,13 @@ import 'package:logic_lab/sections/hero_section.dart';
 import 'package:logic_lab/sections/mini_apps_section.dart';
 import 'package:logic_lab/sections/projects_section.dart';
 import 'package:logic_lab/sections/skills_section.dart';
+import 'package:logic_lab/visit_counter/data/visit_counter_api.dart';
+import 'package:logic_lab/visit_counter/data/visit_counter_repository.dart';
 
 class PortfolioPage extends StatefulWidget {
-  const PortfolioPage({super.key});
+  final VisitCounterRepository? visitCounterRepository;
+
+  const PortfolioPage({super.key, this.visitCounterRepository});
 
   @override
   State<PortfolioPage> createState() => _PortfolioPageState();
@@ -35,15 +41,21 @@ class _PortfolioPageState extends State<PortfolioPage> {
   ];
 
   final _scrollController = ScrollController();
+  late final VisitCounterRepository _visitCounterRepository;
   final Map<String, GlobalKey> _sectionKeys = {
     for (final section in _sections)
       section: GlobalKey(debugLabel: '${section.toLowerCase()}-section'),
   };
   bool _showTopNav = false;
+  bool _visitCountsLoading = true;
+  Map<String, int> _visitCounts = const {};
 
   @override
   void initState() {
     super.initState();
+    _visitCounterRepository =
+        widget.visitCounterRepository ?? VisitCounterRepository();
+    unawaited(_recordSiteVisit());
     _scrollController.addListener(() {
       final shouldShow = _scrollController.offset > 300;
       if (shouldShow != _showTopNav) {
@@ -55,6 +67,9 @@ class _PortfolioPageState extends State<PortfolioPage> {
   @override
   void dispose() {
     _scrollController.dispose();
+    if (widget.visitCounterRepository == null) {
+      _visitCounterRepository.dispose();
+    }
     super.dispose();
   }
 
@@ -77,13 +92,51 @@ class _PortfolioPageState extends State<PortfolioPage> {
     _scrollTo(targetOffset);
   }
 
-  void _openMiniApp(MiniAppDefinition app) {
-    Navigator.of(context).push(
+  Future<void> _openMiniApp(MiniAppDefinition app) async {
+    final visitCountFuture = _recordMiniAppVisit(app.id);
+    await Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (_) => _DeferredMiniAppPage(app: app),
+        builder: (_) => _DeferredMiniAppPage(
+          app: app,
+          visitCountFuture: visitCountFuture,
+        ),
         settings: RouteSettings(name: '/mini-apps/${app.id}'),
       ),
     );
+    if (mounted) unawaited(_refreshVisitCounts());
+  }
+
+  Future<void> _recordSiteVisit() async {
+    try {
+      final counts = await _visitCounterRepository.recordVisit(VisitScope.site);
+      if (!mounted) return;
+      setState(() {
+        _visitCounts = counts.values;
+        _visitCountsLoading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _visitCountsLoading = false);
+    }
+  }
+
+  Future<int?> _recordMiniAppVisit(String scope) async {
+    try {
+      final counts = await _visitCounterRepository.recordVisit(scope);
+      if (mounted) setState(() => _visitCounts = counts.values);
+      return counts[scope];
+    } catch (_) {
+      return _visitCounts[scope];
+    }
+  }
+
+  Future<void> _refreshVisitCounts() async {
+    try {
+      final counts = await _visitCounterRepository.fetchCounts();
+      if (mounted) setState(() => _visitCounts = counts.values);
+    } catch (_) {
+      // Visitor counters are non-critical and never block the portfolio.
+    }
   }
 
   @override
@@ -106,8 +159,13 @@ class _PortfolioPageState extends State<PortfolioPage> {
                 MiniAppsSection(
                   key: _sectionKeys['Mini Apps'],
                   onOpenApp: _openMiniApp,
+                  visitCounts: _visitCounts,
+                  visitCountsLoading: _visitCountsLoading,
                 ),
-                const FooterSection(),
+                FooterSection(
+                  siteVisitCount: _visitCounts[VisitScope.site],
+                  visitCountLoading: _visitCountsLoading,
+                ),
               ],
             ),
           ),
@@ -148,8 +206,12 @@ class _PortfolioPageState extends State<PortfolioPage> {
 
 class _DeferredMiniAppPage extends StatefulWidget {
   final MiniAppDefinition app;
+  final Future<int?> visitCountFuture;
 
-  const _DeferredMiniAppPage({required this.app});
+  const _DeferredMiniAppPage({
+    required this.app,
+    required this.visitCountFuture,
+  });
 
   @override
   State<_DeferredMiniAppPage> createState() => _DeferredMiniAppPageState();
@@ -157,11 +219,23 @@ class _DeferredMiniAppPage extends StatefulWidget {
 
 class _DeferredMiniAppPageState extends State<_DeferredMiniAppPage> {
   late Future<void> _loadFuture;
+  int? _visitCount;
+  bool _visitCountLoading = true;
 
   @override
   void initState() {
     super.initState();
     _loadFuture = _load();
+    unawaited(_resolveVisitCount());
+  }
+
+  Future<void> _resolveVisitCount() async {
+    final count = await widget.visitCountFuture;
+    if (!mounted) return;
+    setState(() {
+      _visitCount = count;
+      _visitCountLoading = false;
+    });
   }
 
   Future<void> _load() => switch (widget.app.id) {
@@ -172,9 +246,18 @@ class _DeferredMiniAppPageState extends State<_DeferredMiniAppPage> {
       };
 
   Widget _loadedApp() => switch (widget.app.id) {
-        'qibla' => qibla.QiblaPage(),
-        'number-adventure' => edu_fun.EduFunPage(),
-        'memory-quest' => memory_quest.MemoryQuestPage(),
+        'qibla' => qibla.QiblaPage(
+            visitCount: _visitCount,
+            visitCountLoading: _visitCountLoading,
+          ),
+        'number-adventure' => edu_fun.EduFunPage(
+            visitCount: _visitCount,
+            visitCountLoading: _visitCountLoading,
+          ),
+        'memory-quest' => memory_quest.MemoryQuestPage(
+            visitCount: _visitCount,
+            visitCountLoading: _visitCountLoading,
+          ),
         _ => const SizedBox.shrink(),
       };
 

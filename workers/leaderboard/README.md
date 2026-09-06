@@ -37,11 +37,18 @@ flutter run -d chrome \
 
 ## API
 
-- `POST /api/v1/scores` — validates and submits one completed session.
-- `GET /api/v1/leaderboard?age=6&period=today&limit=50` — returns ranked player bests.
-- `POST /api/v1/memory/scores` — submits a completed Memory Quest Solo run.
-- `GET /api/v1/memory/leaderboard?period=today&limit=50` — returns Memory Champions.
-- `GET /health` — health check.
+The complete API contract, payload validation, response examples, ranking rules,
+privacy notes, and endpoint maintenance checklist live in [`API.md`](API.md).
+Whenever an endpoint changes, update that document in the same change and run:
+
+```bash
+npm run verify
+```
+
+Visitor counters contain only a fixed scope and an aggregate count. No visitor
+identifier, IP address, location, user agent, or event history is stored in D1.
+The `site` counter increments once per portfolio load, and a mini-app counter
+increments whenever that app is opened.
 
 Ranking order is score descending, completion time ascending, then the earlier
 server timestamp. All D1 queries use bound prepared-statement parameters.
