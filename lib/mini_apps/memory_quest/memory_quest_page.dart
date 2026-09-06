@@ -10,6 +10,7 @@ import 'package:logic_lab/mini_apps/memory_quest/screens/memory_setup_screens.da
 import 'package:logic_lab/mini_apps/memory_quest/screens/memory_solo_game_screen.dart';
 import 'package:logic_lab/mini_apps/memory_quest/screens/memory_solo_result_screen.dart';
 import 'package:logic_lab/mini_apps/memory_quest/widgets/memory_components.dart';
+import 'package:logic_lab/visit_counter/widgets/visit_count_badge.dart';
 
 enum _MemoryView {
   loading,
@@ -26,11 +27,15 @@ enum _MemoryView {
 class MemoryQuestPage extends StatefulWidget {
   final MemoryRepository? progressRepository;
   final MemoryLeaderboardRepository? leaderboardRepository;
+  final int? visitCount;
+  final bool visitCountLoading;
 
   const MemoryQuestPage({
     super.key,
     this.progressRepository,
     this.leaderboardRepository,
+    this.visitCount,
+    this.visitCountLoading = false,
   });
 
   @override
@@ -84,7 +89,11 @@ class _MemoryQuestPageState extends State<MemoryQuestPage> {
           child: SafeArea(
             child: Column(
               children: [
-                _MemoryTopBar(onExit: () => Navigator.of(context).pop()),
+                _MemoryTopBar(
+                  visitCount: widget.visitCount,
+                  visitCountLoading: widget.visitCountLoading,
+                  onExit: () => Navigator.of(context).pop(),
+                ),
                 Expanded(
                   child: AnimatedSwitcher(
                     duration: const Duration(milliseconds: 230),
@@ -237,7 +246,14 @@ class _MemoryQuestPageState extends State<MemoryQuestPage> {
 
 class _MemoryTopBar extends StatelessWidget {
   final VoidCallback onExit;
-  const _MemoryTopBar({required this.onExit});
+  final int? visitCount;
+  final bool visitCountLoading;
+
+  const _MemoryTopBar({
+    required this.onExit,
+    required this.visitCount,
+    required this.visitCountLoading,
+  });
 
   @override
   Widget build(BuildContext context) => Container(
@@ -279,20 +295,11 @@ class _MemoryTopBar extends StatelessWidget {
                     ),
               ),
             ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
-              decoration: BoxDecoration(
-                color: MemoryColors.cyan.withValues(alpha: 0.09),
-                borderRadius: BorderRadius.circular(99),
-              ),
-              child: Text(
-                'REMEMBER · MATCH · WIN',
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: MemoryColors.cyan,
-                      fontWeight: FontWeight.w900,
-                      fontSize: 9,
-                    ),
-              ),
+            VisitCountBadge(
+              count: visitCount,
+              loading: visitCountLoading,
+              color: MemoryColors.cyan,
+              compact: true,
             ),
           ],
         ),

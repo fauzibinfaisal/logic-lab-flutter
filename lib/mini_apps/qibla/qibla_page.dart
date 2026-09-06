@@ -5,13 +5,21 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:logic_lab/mini_apps/qibla/heading/heading_provider.dart';
 import 'package:logic_lab/mini_apps/qibla/qibla_calculator.dart';
+import 'package:logic_lab/visit_counter/widgets/visit_count_badge.dart';
 
 enum _LocationStatus { idle, loading, ready, permissionDenied, unavailable }
 
 enum _HeadingStatus { idle, waiting, available, unsupported }
 
 class QiblaPage extends StatefulWidget {
-  const QiblaPage({super.key});
+  final int? visitCount;
+  final bool visitCountLoading;
+
+  const QiblaPage({
+    super.key,
+    this.visitCount,
+    this.visitCountLoading = false,
+  });
 
   @override
   State<QiblaPage> createState() => _QiblaPageState();
@@ -153,7 +161,13 @@ class _QiblaPageState extends State<QiblaPage> {
       body: SafeArea(
         child: CustomScrollView(
           slivers: [
-            SliverToBoxAdapter(child: _QiblaTopBar(onBack: _goBack)),
+            SliverToBoxAdapter(
+              child: _QiblaTopBar(
+                onBack: _goBack,
+                visitCount: widget.visitCount,
+                visitCountLoading: widget.visitCountLoading,
+              ),
+            ),
             SliverPadding(
               padding: EdgeInsets.fromLTRB(
                 width >= 720 ? 48 : 20,
@@ -372,8 +386,14 @@ class _QiblaPageState extends State<QiblaPage> {
 
 class _QiblaTopBar extends StatelessWidget {
   final VoidCallback onBack;
+  final int? visitCount;
+  final bool visitCountLoading;
 
-  const _QiblaTopBar({required this.onBack});
+  const _QiblaTopBar({
+    required this.onBack,
+    required this.visitCount,
+    required this.visitCountLoading,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -417,9 +437,11 @@ class _QiblaTopBar extends StatelessWidget {
                 ),
           ),
           const Spacer(),
-          const _StatusPill(
-            label: 'MINI APP',
+          VisitCountBadge(
+            count: visitCount,
+            loading: visitCountLoading,
             color: Color(0xFF00D4FF),
+            compact: true,
           ),
         ],
       ),

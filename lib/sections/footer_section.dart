@@ -1,8 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:logic_lab/data/portfolio_data.dart';
+import 'package:logic_lab/visit_counter/widgets/visit_count_badge.dart';
 
 class FooterSection extends StatelessWidget {
-  const FooterSection({super.key});
+  final int? siteVisitCount;
+  final bool visitCountLoading;
+
+  const FooterSection({
+    super.key,
+    this.siteVisitCount,
+    this.visitCountLoading = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -52,6 +60,12 @@ class FooterSection extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 32),
+          VisitCountBadge(
+            count: siteVisitCount,
+            loading: visitCountLoading,
+            color: const Color(0xFF00D4FF),
+          ),
+          const SizedBox(height: 18),
           Text(
             '© 2026 Fauzi. Built with Flutter.',
             style: tt.bodySmall?.copyWith(color: Colors.white30),

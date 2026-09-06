@@ -1,12 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:logic_lab/mini_apps/data/mini_apps_catalog.dart';
 import 'package:logic_lab/mini_apps/models/mini_app.dart';
+import 'package:logic_lab/visit_counter/widgets/visit_count_badge.dart';
 import 'package:logic_lab/widgets/fade_in.dart';
 
 class MiniAppsSection extends StatelessWidget {
   final ValueChanged<MiniAppDefinition> onOpenApp;
+  final Map<String, int> visitCounts;
+  final bool visitCountsLoading;
 
-  const MiniAppsSection({super.key, required this.onOpenApp});
+  const MiniAppsSection({
+    super.key,
+    required this.onOpenApp,
+    this.visitCounts = const {},
+    this.visitCountsLoading = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -57,6 +65,8 @@ class MiniAppsSection extends StatelessWidget {
                     child: _CategoryBlock(
                       category: category,
                       onOpenApp: onOpenApp,
+                      visitCounts: visitCounts,
+                      visitCountsLoading: visitCountsLoading,
                     ),
                   ),
               ],
@@ -125,8 +135,15 @@ class _MiniAppsHeader extends StatelessWidget {
 class _CategoryBlock extends StatelessWidget {
   final MiniAppCategoryDefinition category;
   final ValueChanged<MiniAppDefinition> onOpenApp;
+  final Map<String, int> visitCounts;
+  final bool visitCountsLoading;
 
-  const _CategoryBlock({required this.category, required this.onOpenApp});
+  const _CategoryBlock({
+    required this.category,
+    required this.onOpenApp,
+    required this.visitCounts,
+    required this.visitCountsLoading,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -190,6 +207,8 @@ class _CategoryBlock extends StatelessWidget {
                     child: _MiniAppCard(
                       app: app,
                       onTap: () => onOpenApp(app),
+                      visitCount: visitCounts[app.id],
+                      visitCountLoading: visitCountsLoading,
                     ),
                   ),
               ],
@@ -204,8 +223,15 @@ class _CategoryBlock extends StatelessWidget {
 class _MiniAppCard extends StatefulWidget {
   final MiniAppDefinition app;
   final VoidCallback onTap;
+  final int? visitCount;
+  final bool visitCountLoading;
 
-  const _MiniAppCard({required this.app, required this.onTap});
+  const _MiniAppCard({
+    required this.app,
+    required this.onTap,
+    required this.visitCount,
+    required this.visitCountLoading,
+  });
 
   @override
   State<_MiniAppCard> createState() => _MiniAppCardState();
@@ -292,21 +318,34 @@ class _MiniAppCardState extends State<_MiniAppCard> {
                           ),
                         ),
                         const SizedBox(height: 14),
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
+                        Wrap(
+                          spacing: 12,
+                          runSpacing: 8,
+                          crossAxisAlignment: WrapCrossAlignment.center,
                           children: [
-                            Text(
-                              'Open app',
-                              style: tt.labelMedium?.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w700,
-                              ),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  'Open app',
+                                  style: tt.labelMedium?.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                const SizedBox(width: 7),
+                                Icon(
+                                  Icons.arrow_forward_rounded,
+                                  color: widget.app.accentColor,
+                                  size: 18,
+                                ),
+                              ],
                             ),
-                            const SizedBox(width: 7),
-                            Icon(
-                              Icons.arrow_forward_rounded,
+                            VisitCountBadge(
+                              count: widget.visitCount,
+                              loading: widget.visitCountLoading,
                               color: widget.app.accentColor,
-                              size: 18,
+                              compact: true,
                             ),
                           ],
                         ),
