@@ -286,6 +286,15 @@ class _QiblaPageState extends State<QiblaPage> {
     final tt = Theme.of(context).textTheme;
     final qiblaBearing = _qiblaBearing;
     final headingAvailable = _headingStatus == _HeadingStatus.available;
+    final headingUnsupported = _headingStatus == _HeadingStatus.unsupported;
+    final headingWaiting = _headingStatus == _HeadingStatus.waiting;
+    final headingGuidance = headingAvailable
+        ? 'For the best heading, hold your phone flat and keep it away from metal or magnetic objects.'
+        : headingUnsupported
+            ? 'Live compass is unavailable on this device. For real-time heading, open QIBLA App on a supported iOS or Android phone. You can still use the Qibla bearing above relative to North.'
+            : headingWaiting
+                ? 'Checking for a motion sensor. Keep your device still for a moment.'
+                : 'Real-time compass requires motion sensors and works best on supported iOS or Android phones. On Windows or macOS, you can still calculate the Qibla bearing relative to North.';
 
     return Column(
       children: [
@@ -340,20 +349,30 @@ class _QiblaPageState extends State<QiblaPage> {
         ),
         const SizedBox(height: 18),
         _GlassPanel(
-          color: const Color(0xFF10241F),
-          borderColor: const Color(0xFF275444),
+          color: headingUnsupported
+              ? const Color(0xFF28200F)
+              : const Color(0xFF10241F),
+          borderColor: headingUnsupported
+              ? const Color(0xFF6B5420)
+              : const Color(0xFF275444),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(
-                Icons.tips_and_updates_outlined,
-                color: Color(0xFF6EE7B7),
+              Icon(
+                headingUnsupported
+                    ? Icons.phone_iphone_rounded
+                    : headingWaiting
+                        ? Icons.sensors_rounded
+                        : Icons.tips_and_updates_outlined,
+                color: headingUnsupported
+                    ? const Color(0xFFFFC857)
+                    : const Color(0xFF6EE7B7),
                 size: 22,
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  'For the best heading, hold your phone flat and keep it away from metal or magnetic objects.',
+                  headingGuidance,
                   style: tt.bodySmall?.copyWith(
                     color: Colors.white60,
                     height: 1.55,
