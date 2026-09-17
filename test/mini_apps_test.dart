@@ -40,6 +40,7 @@ void main() {
               child: MiniAppsSection(
                 visitCounts: const {
                   'qibla': 82,
+                  'ble-packet-lab': 96,
                   'number-adventure': 315,
                   'memory-quest': 144,
                 },
@@ -58,10 +59,13 @@ void main() {
 
     expect(find.text('Traveling Apps'), findsOneWidget);
     expect(find.text('QIBLA App'), findsOneWidget);
+    expect(find.text('Developer Tools'), findsOneWidget);
+    expect(find.text('BLE Packet Lab'), findsOneWidget);
     expect(find.text('Edu Fun'), findsOneWidget);
     expect(find.text('Number Adventure'), findsOneWidget);
     expect(find.text('Memory Quest'), findsOneWidget);
     expect(find.text('82 visits'), findsOneWidget);
+    expect(find.text('96 visits'), findsOneWidget);
     expect(find.text('315 visits'), findsOneWidget);
     expect(find.text('144 visits'), findsOneWidget);
 

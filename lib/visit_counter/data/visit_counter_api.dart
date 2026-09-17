@@ -6,12 +6,14 @@ import 'package:http/http.dart' as http;
 abstract final class VisitScope {
   static const site = 'site';
   static const qibla = 'qibla';
+  static const blePacketLab = 'ble-packet-lab';
   static const numberAdventure = 'number-adventure';
   static const memoryQuest = 'memory-quest';
 
   static const values = {
     site,
     qibla,
+    blePacketLab,
     numberAdventure,
     memoryQuest,
   };

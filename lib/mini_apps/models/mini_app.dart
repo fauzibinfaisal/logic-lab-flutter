@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-enum MiniAppCategory { traveling, eduFun }
+enum MiniAppCategory { traveling, developerTools, eduFun }
 
 class MiniAppDefinition {
   final String id;

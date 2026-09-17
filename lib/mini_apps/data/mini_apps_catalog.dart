@@ -23,6 +23,17 @@ const numberAdventureMiniApp = MiniAppDefinition(
   accentColor: Color(0xFFFFC857),
 );
 
+const blePacketLabMiniApp = MiniAppDefinition(
+  id: 'ble-packet-lab',
+  title: 'BLE Packet Lab',
+  description:
+      'Decode HEX packets, inspect every byte, and generate parsing starters for mobile projects.',
+  eyebrow: 'DEVELOPER TOOL',
+  category: MiniAppCategory.developerTools,
+  icon: Icons.bluetooth_searching_rounded,
+  accentColor: Color(0xFF8B9DFF),
+);
+
 const memoryQuestMiniApp = MiniAppDefinition(
   id: 'memory-quest',
   title: 'Memory Quest',
@@ -41,6 +52,13 @@ const miniAppCatalog = [
     description: 'Thoughtful utilities designed to travel light.',
     icon: Icons.flight_takeoff_rounded,
     apps: [qiblaMiniApp],
+  ),
+  MiniAppCategoryDefinition(
+    category: MiniAppCategory.developerTools,
+    title: 'Developer Tools',
+    description: 'Small utilities for debugging, decoding, and building.',
+    icon: Icons.terminal_rounded,
+    apps: [blePacketLabMiniApp],
   ),
   MiniAppCategoryDefinition(
     category: MiniAppCategory.eduFun,

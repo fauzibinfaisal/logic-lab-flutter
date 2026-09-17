@@ -21,6 +21,7 @@ void main() {
           'counts': {
             'site': 1204,
             'qibla': 82,
+            'ble-packet-lab': 96,
             'number-adventure': 315,
             'memory-quest': 144,
           },
@@ -39,6 +40,7 @@ void main() {
     expect(submitted.containsKey('location'), isFalse);
     expect(submitted.containsKey('visitorId'), isFalse);
     expect(counts[VisitScope.site], 1204);
+    expect(counts[VisitScope.blePacketLab], 96);
     expect(counts[VisitScope.numberAdventure], 315);
   });
 
