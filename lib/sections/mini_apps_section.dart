@@ -417,6 +417,40 @@ class _AppPreview extends StatelessWidget {
               ),
             ],
           ),
+        'ble-packet-lab' => Stack(
+            alignment: Alignment.center,
+            children: [
+              Icon(
+                Icons.bluetooth_rounded,
+                size: 45,
+                color: app.accentColor,
+              ),
+              Positioned(
+                top: 10,
+                right: 9,
+                child: Text(
+                  '0A',
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: const Color(0xFF63E6FF),
+                        fontFamily: 'monospace',
+                        fontWeight: FontWeight.w900,
+                      ),
+                ),
+              ),
+              Positioned(
+                left: 8,
+                bottom: 10,
+                child: Text(
+                  'FF',
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: Colors.white54,
+                        fontFamily: 'monospace',
+                        fontWeight: FontWeight.w900,
+                      ),
+                ),
+              ),
+            ],
+          ),
         'memory-quest' => Stack(
             alignment: Alignment.center,
             children: [

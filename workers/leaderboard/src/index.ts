@@ -55,6 +55,7 @@ interface VisitCounterRow {
 const visitScopes = new Set([
   "site",
   "qibla",
+  "ble-packet-lab",
   "number-adventure",
   "memory-quest",
 ]);

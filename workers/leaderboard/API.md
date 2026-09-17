@@ -253,6 +253,7 @@ Scope yang didukung:
 
 - `site`
 - `qibla`
+- `ble-packet-lab`
 - `number-adventure`
 - `memory-quest`
 
@@ -275,6 +276,7 @@ Response `200` berisi seluruh counter setelah increment:
   "counts": {
     "site": 120,
     "qibla": 31,
+    "ble-packet-lab": 19,
     "number-adventure": 54,
     "memory-quest": 28
   }
@@ -329,6 +331,7 @@ error state di UI. Timeout client tidak menghasilkan status HTTP dari Worker.
 | `0001_create_scores.sql` | `scores` | Hasil Number Adventure dan index ranking. |
 | `0002_create_memory_scores.sql` | `memory_scores` | Hasil Memory Quest dan index ranking. |
 | `0003_create_visit_counters.sql` | `visit_counters` | Aggregate site dan mini-app visits. |
+| `0004_add_ble_packet_lab_visit_scope.sql` | `visit_counters` | Menambahkan scope visitor BLE Packet Lab. |
 
 Jalankan migration dan deploy dari direktori Worker:
 

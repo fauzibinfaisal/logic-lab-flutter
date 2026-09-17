@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:logic_lab/mini_apps/ble_packet_lab/ble_packet_lab_page.dart'
+    deferred as ble_packet_lab;
 import 'package:logic_lab/mini_apps/edu_fun/edu_fun_page.dart'
     deferred as edu_fun;
 import 'package:logic_lab/mini_apps/memory_quest/memory_quest_page.dart'
@@ -240,6 +242,7 @@ class _DeferredMiniAppPageState extends State<_DeferredMiniAppPage> {
 
   Future<void> _load() => switch (widget.app.id) {
         'qibla' => qibla.loadLibrary(),
+        'ble-packet-lab' => ble_packet_lab.loadLibrary(),
         'number-adventure' => edu_fun.loadLibrary(),
         'memory-quest' => memory_quest.loadLibrary(),
         _ => Future<void>.error('Unknown mini app: ${widget.app.id}'),
@@ -247,6 +250,10 @@ class _DeferredMiniAppPageState extends State<_DeferredMiniAppPage> {
 
   Widget _loadedApp() => switch (widget.app.id) {
         'qibla' => qibla.QiblaPage(
+            visitCount: _visitCount,
+            visitCountLoading: _visitCountLoading,
+          ),
+        'ble-packet-lab' => ble_packet_lab.BlePacketLabPage(
             visitCount: _visitCount,
             visitCountLoading: _visitCountLoading,
           ),
