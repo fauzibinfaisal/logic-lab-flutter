@@ -33,9 +33,7 @@ class ProjectsSection extends StatelessWidget {
             child: Wrap(
               spacing: 12,
               runSpacing: 12,
-              children: kProjects
-                  .map((p) => _ProjectChip(label: p))
-                  .toList(),
+              children: kProjects.map((p) => _ProjectChip(label: p)).toList(),
             ),
           ),
         ],
@@ -73,12 +71,14 @@ class _ProjectChip extends StatelessWidget {
             color: Color(0xFF00D4FF),
           ),
           const SizedBox(width: 8),
-          Text(
-            label,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Colors.white.withValues(alpha: 0.8),
-                  fontWeight: FontWeight.w500,
-                ),
+          Flexible(
+            child: Text(
+              label,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Colors.white.withValues(alpha: 0.8),
+                    fontWeight: FontWeight.w500,
+                  ),
+            ),
           ),
         ],
       ),

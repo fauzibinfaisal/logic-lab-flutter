@@ -1,14 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:logic_lab/mini_apps/ble_packet_lab/ble_packet_lab_page.dart'
-    deferred as ble_packet_lab;
-import 'package:logic_lab/mini_apps/edu_fun/edu_fun_page.dart'
-    deferred as edu_fun;
-import 'package:logic_lab/mini_apps/memory_quest/memory_quest_page.dart'
-    deferred as memory_quest;
+import 'package:go_router/go_router.dart';
+import 'package:logic_lab/core/links/cv_download.dart';
+import 'package:logic_lab/core/links/portfolio_links.dart';
 import 'package:logic_lab/mini_apps/models/mini_app.dart';
-import 'package:logic_lab/mini_apps/qibla/qibla_page.dart' deferred as qibla;
 import 'package:logic_lab/sections/about_section.dart';
 import 'package:logic_lab/sections/achievements_section.dart';
 import 'package:logic_lab/sections/education_section.dart';
@@ -95,17 +91,29 @@ class _PortfolioPageState extends State<PortfolioPage> {
   }
 
   Future<void> _openMiniApp(MiniAppDefinition app) async {
-    final visitCountFuture = _recordMiniAppVisit(app.id);
-    await Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => _DeferredMiniAppPage(
-          app: app,
-          visitCountFuture: visitCountFuture,
-        ),
-        settings: RouteSettings(name: '/mini-apps/${app.id}'),
+    await context.push<void>('/mini-apps/${app.id}');
+    if (mounted) unawaited(_refreshVisitCounts());
+  }
+
+  Future<void> _performExternalAction(
+    Future<bool> Function() action,
+    String failureMessage,
+  ) async {
+    final succeeded = await action();
+    if (!succeeded && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(failureMessage)),
+      );
+    }
+  }
+
+  void _openLink(Uri uri, String failureMessage) {
+    unawaited(
+      _performExternalAction(
+        () => PortfolioLinks.open(uri),
+        failureMessage,
       ),
     );
-    if (mounted) unawaited(_refreshVisitCounts());
   }
 
   Future<void> _recordSiteVisit() async {
@@ -119,16 +127,6 @@ class _PortfolioPageState extends State<PortfolioPage> {
     } catch (_) {
       if (!mounted) return;
       setState(() => _visitCountsLoading = false);
-    }
-  }
-
-  Future<int?> _recordMiniAppVisit(String scope) async {
-    try {
-      final counts = await _visitCounterRepository.recordVisit(scope);
-      if (mounted) setState(() => _visitCounts = counts.values);
-      return counts[scope];
-    } catch (_) {
-      return _visitCounts[scope];
     }
   }
 
@@ -151,7 +149,35 @@ class _PortfolioPageState extends State<PortfolioPage> {
             controller: _scrollController,
             child: Column(
               children: [
-                const HeroSection(),
+                HeroSection(
+                  onViewMiniApps: () => _scrollToSection('Mini Apps'),
+                  onDownloadCv: () => unawaited(
+                    _performExternalAction(
+                      downloadCv,
+                      'Could not download the CV. Please try again.',
+                    ),
+                  ),
+                  onEmail: () => _openLink(
+                    PortfolioLinks.email,
+                    'Could not open your email app.',
+                  ),
+                  onPhone: () => _openLink(
+                    PortfolioLinks.phone,
+                    'Could not open the phone app.',
+                  ),
+                  onLocation: () => _openLink(
+                    PortfolioLinks.location,
+                    'Could not open the map.',
+                  ),
+                  onGitHub: () => _openLink(
+                    PortfolioLinks.github,
+                    'Could not open GitHub.',
+                  ),
+                  onLinkedIn: () => _openLink(
+                    PortfolioLinks.linkedin,
+                    'Could not open LinkedIn.',
+                  ),
+                ),
                 AboutSection(key: _sectionKeys['About']),
                 ExperienceSection(key: _sectionKeys['Experience']),
                 SkillsSection(key: _sectionKeys['Skills']),
@@ -202,127 +228,6 @@ class _PortfolioPageState extends State<PortfolioPage> {
           ),
         ],
       ),
-    );
-  }
-}
-
-class _DeferredMiniAppPage extends StatefulWidget {
-  final MiniAppDefinition app;
-  final Future<int?> visitCountFuture;
-
-  const _DeferredMiniAppPage({
-    required this.app,
-    required this.visitCountFuture,
-  });
-
-  @override
-  State<_DeferredMiniAppPage> createState() => _DeferredMiniAppPageState();
-}
-
-class _DeferredMiniAppPageState extends State<_DeferredMiniAppPage> {
-  late Future<void> _loadFuture;
-  int? _visitCount;
-  bool _visitCountLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadFuture = _load();
-    unawaited(_resolveVisitCount());
-  }
-
-  Future<void> _resolveVisitCount() async {
-    final count = await widget.visitCountFuture;
-    if (!mounted) return;
-    setState(() {
-      _visitCount = count;
-      _visitCountLoading = false;
-    });
-  }
-
-  Future<void> _load() => switch (widget.app.id) {
-        'qibla' => qibla.loadLibrary(),
-        'ble-packet-lab' => ble_packet_lab.loadLibrary(),
-        'number-adventure' => edu_fun.loadLibrary(),
-        'memory-quest' => memory_quest.loadLibrary(),
-        _ => Future<void>.error('Unknown mini app: ${widget.app.id}'),
-      };
-
-  Widget _loadedApp() => switch (widget.app.id) {
-        'qibla' => qibla.QiblaPage(
-            visitCount: _visitCount,
-            visitCountLoading: _visitCountLoading,
-          ),
-        'ble-packet-lab' => ble_packet_lab.BlePacketLabPage(
-            visitCount: _visitCount,
-            visitCountLoading: _visitCountLoading,
-          ),
-        'number-adventure' => edu_fun.EduFunPage(
-            visitCount: _visitCount,
-            visitCountLoading: _visitCountLoading,
-          ),
-        'memory-quest' => memory_quest.MemoryQuestPage(
-            visitCount: _visitCount,
-            visitCountLoading: _visitCountLoading,
-          ),
-        _ => const SizedBox.shrink(),
-      };
-
-  @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<void>(
-      future: _loadFuture,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.done &&
-            !snapshot.hasError) {
-          return _loadedApp();
-        }
-
-        return Scaffold(
-          backgroundColor: const Color(0xFF080D1A),
-          body: SafeArea(
-            child: Center(
-              child: Padding(
-                padding: const EdgeInsets.all(28),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (snapshot.hasError)
-                      Icon(
-                        Icons.cloud_off_rounded,
-                        color: widget.app.accentColor,
-                        size: 44,
-                      )
-                    else
-                      CircularProgressIndicator(
-                        color: widget.app.accentColor,
-                      ),
-                    const SizedBox(height: 22),
-                    Text(
-                      snapshot.hasError
-                          ? 'Could not load ${widget.app.title}'
-                          : 'Loading ${widget.app.title}…',
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w800,
-                          ),
-                    ),
-                    if (snapshot.hasError) ...[
-                      const SizedBox(height: 16),
-                      FilledButton.icon(
-                        onPressed: () => setState(() => _loadFuture = _load()),
-                        icon: const Icon(Icons.refresh_rounded),
-                        label: const Text('Try again'),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            ),
-          ),
-        );
-      },
     );
   }
 }

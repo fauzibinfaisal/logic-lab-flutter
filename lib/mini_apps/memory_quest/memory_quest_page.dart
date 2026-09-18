@@ -29,6 +29,7 @@ class MemoryQuestPage extends StatefulWidget {
   final MemoryLeaderboardRepository? leaderboardRepository;
   final int? visitCount;
   final bool visitCountLoading;
+  final VoidCallback? onExit;
 
   const MemoryQuestPage({
     super.key,
@@ -36,6 +37,7 @@ class MemoryQuestPage extends StatefulWidget {
     this.leaderboardRepository,
     this.visitCount,
     this.visitCountLoading = false,
+    this.onExit,
   });
 
   @override
@@ -92,7 +94,7 @@ class _MemoryQuestPageState extends State<MemoryQuestPage> {
                 _MemoryTopBar(
                   visitCount: widget.visitCount,
                   visitCountLoading: widget.visitCountLoading,
-                  onExit: () => Navigator.of(context).pop(),
+                  onExit: widget.onExit ?? () => Navigator.of(context).pop(),
                 ),
                 Expanded(
                   child: AnimatedSwitcher(

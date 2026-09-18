@@ -37,6 +37,12 @@ void main() {
     await tester.pumpWidget(const PortfolioApp());
     await tester.pump(const Duration(seconds: 2));
 
+    expect(find.text('View Mini Apps'), findsOneWidget);
+    expect(find.text('Download CV'), findsOneWidget);
+    expect(find.text('Email Me'), findsOneWidget);
+    expect(find.widgetWithText(TextButton, 'GitHub'), findsOneWidget);
+    expect(find.widgetWithText(TextButton, 'LinkedIn'), findsOneWidget);
+
     final scrollable = find.byType(Scrollable).first;
     await tester.drag(scrollable, const Offset(0, -400));
     await tester.pumpAndSettle();

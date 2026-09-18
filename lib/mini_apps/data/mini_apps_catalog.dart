@@ -68,3 +68,12 @@ const miniAppCatalog = [
     apps: [numberAdventureMiniApp, memoryQuestMiniApp],
   ),
 ];
+
+MiniAppDefinition? miniAppById(String id) {
+  for (final category in miniAppCatalog) {
+    for (final app in category.apps) {
+      if (app.id == id) return app;
+    }
+  }
+  return null;
+}
