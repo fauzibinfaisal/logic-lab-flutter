@@ -14,11 +14,13 @@ const _green = Color(0xFF70E7B1);
 class BlePacketLabPage extends StatefulWidget {
   final int? visitCount;
   final bool visitCountLoading;
+  final VoidCallback? onExit;
 
   const BlePacketLabPage({
     super.key,
     this.visitCount,
     this.visitCountLoading = false,
+    this.onExit,
   });
 
   @override
@@ -107,7 +109,7 @@ class _BlePacketLabPageState extends State<BlePacketLabPage> {
               child: _PacketLabTopBar(
                 visitCount: widget.visitCount,
                 visitCountLoading: widget.visitCountLoading,
-                onBack: () => Navigator.of(context).pop(),
+                onBack: widget.onExit ?? () => Navigator.of(context).pop(),
               ),
             ),
             SliverPadding(

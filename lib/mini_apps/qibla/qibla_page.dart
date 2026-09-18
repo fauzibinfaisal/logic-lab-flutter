@@ -14,11 +14,13 @@ enum _HeadingStatus { idle, waiting, available, unsupported }
 class QiblaPage extends StatefulWidget {
   final int? visitCount;
   final bool visitCountLoading;
+  final VoidCallback? onExit;
 
   const QiblaPage({
     super.key,
     this.visitCount,
     this.visitCountLoading = false,
+    this.onExit,
   });
 
   @override
@@ -400,7 +402,14 @@ class _QiblaPageState extends State<QiblaPage> {
     );
   }
 
-  void _goBack() => Navigator.of(context).pop();
+  void _goBack() {
+    final onExit = widget.onExit;
+    if (onExit != null) {
+      onExit();
+    } else {
+      Navigator.of(context).pop();
+    }
+  }
 }
 
 class _QiblaTopBar extends StatelessWidget {

@@ -3,7 +3,24 @@ import 'package:logic_lab/data/portfolio_data.dart';
 import 'package:logic_lab/widgets/fade_in.dart';
 
 class HeroSection extends StatelessWidget {
-  const HeroSection({super.key});
+  final VoidCallback onViewMiniApps;
+  final VoidCallback onDownloadCv;
+  final VoidCallback onEmail;
+  final VoidCallback onPhone;
+  final VoidCallback onLocation;
+  final VoidCallback onGitHub;
+  final VoidCallback onLinkedIn;
+
+  const HeroSection({
+    super.key,
+    required this.onViewMiniApps,
+    required this.onDownloadCv,
+    required this.onEmail,
+    required this.onPhone,
+    required this.onLocation,
+    required this.onGitHub,
+    required this.onLinkedIn,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +67,8 @@ class HeroSection extends StatelessWidget {
               FadeIn(
                 delay: const Duration(milliseconds: 0),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                   decoration: BoxDecoration(
                     border: Border.all(
                         color: const Color(0xFF00D4FF).withValues(alpha: 0.5)),
@@ -69,11 +87,14 @@ class HeroSection extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 8),
-                      Text(
-                        'Available for opportunities',
-                        style: tt.labelSmall?.copyWith(
-                          color: const Color(0xFF00D4FF),
-                          letterSpacing: 0.5,
+                      Flexible(
+                        child: Text(
+                          'Available for opportunities',
+                          overflow: TextOverflow.ellipsis,
+                          style: tt.labelSmall?.copyWith(
+                            color: const Color(0xFF00D4FF),
+                            letterSpacing: 0.5,
+                          ),
                         ),
                       ),
                     ],
@@ -123,36 +144,110 @@ class HeroSection extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 36),
-              // Contact row
+              // Primary actions
               FadeIn(
-                delay: const Duration(milliseconds: 350),
+                delay: const Duration(milliseconds: 320),
                 child: Wrap(
-                  spacing: 20,
+                  spacing: 12,
                   runSpacing: 12,
                   children: [
-                    _ContactChip(
-                        icon: Icons.phone_rounded, label: kContact.phone),
-                    _ContactChip(
-                        icon: Icons.email_rounded, label: kContact.email),
-                    _ContactChip(
-                        icon: Icons.location_on_rounded,
-                        label: kContact.location),
+                    FilledButton.icon(
+                      onPressed: onViewMiniApps,
+                      icon: const Icon(Icons.apps_rounded, size: 19),
+                      label: const Text('View Mini Apps'),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: const Color(0xFF00D4FF),
+                        foregroundColor: const Color(0xFF080D1A),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 16,
+                        ),
+                        textStyle: const TextStyle(
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                    OutlinedButton.icon(
+                      onPressed: onDownloadCv,
+                      icon: const Icon(Icons.download_rounded, size: 19),
+                      label: const Text('Download CV'),
+                      style: _secondaryButtonStyle(),
+                    ),
+                    OutlinedButton.icon(
+                      onPressed: onEmail,
+                      icon: const Icon(Icons.mail_outline_rounded, size: 19),
+                      label: const Text('Email Me'),
+                      style: _secondaryButtonStyle(),
+                    ),
                   ],
                 ),
               ),
-              const SizedBox(height: 48),
+              const SizedBox(height: 24),
+              // Contact row
+              FadeIn(
+                delay: const Duration(milliseconds: 390),
+                child: Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    _ContactChip(
+                      icon: Icons.phone_rounded,
+                      label: kContact.phone,
+                      tooltip: 'Call Fauzi',
+                      onTap: onPhone,
+                    ),
+                    _ContactChip(
+                      icon: Icons.email_rounded,
+                      label: kContact.email,
+                      tooltip: 'Email Fauzi',
+                      onTap: onEmail,
+                    ),
+                    _ContactChip(
+                      icon: Icons.location_on_rounded,
+                      label: kContact.location,
+                      tooltip: 'View location on map',
+                      onTap: onLocation,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 14),
+              FadeIn(
+                delay: const Duration(milliseconds: 430),
+                child: Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    _SocialLink(
+                      icon: Icons.code_rounded,
+                      label: 'GitHub',
+                      onTap: onGitHub,
+                    ),
+                    _SocialLink(
+                      icon: Icons.work_outline_rounded,
+                      label: 'LinkedIn',
+                      onTap: onLinkedIn,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 40),
               // Tech stack pills
               FadeIn(
-                delay: const Duration(milliseconds: 450),
+                delay: const Duration(milliseconds: 500),
                 child: Wrap(
                   spacing: 10,
                   runSpacing: 10,
                   children: [
-                    'Swift', 'Flutter', 'Kotlin', 'BLE / IoT',
-                    'UIKit', 'SwiftUI', 'MVVM', 'Clean Arch',
-                  ]
-                      .map((t) => _TechPill(label: t))
-                      .toList(),
+                    'Swift',
+                    'Flutter',
+                    'Kotlin',
+                    'BLE / IoT',
+                    'UIKit',
+                    'SwiftUI',
+                    'MVVM',
+                    'Clean Arch',
+                  ].map((t) => _TechPill(label: t)).toList(),
                 ),
               ),
             ],
@@ -161,27 +256,76 @@ class HeroSection extends StatelessWidget {
       ),
     );
   }
+
+  ButtonStyle _secondaryButtonStyle() {
+    return OutlinedButton.styleFrom(
+      foregroundColor: Colors.white,
+      side: const BorderSide(color: Color(0xFF2A5272)),
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+      textStyle: const TextStyle(fontWeight: FontWeight.w700),
+    );
+  }
 }
 
 class _ContactChip extends StatelessWidget {
   final IconData icon;
   final String label;
-  const _ContactChip({required this.icon, required this.label});
+  final String tooltip;
+  final VoidCallback onTap;
+
+  const _ContactChip({
+    required this.icon,
+    required this.label,
+    required this.tooltip,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 15, color: const Color(0xFF00D4FF)),
-        const SizedBox(width: 6),
-        Text(
-          label,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Colors.white70,
-              ),
+    return Tooltip(
+      message: tooltip,
+      child: TextButton.icon(
+        onPressed: onTap,
+        icon: Icon(icon, size: 16),
+        label: Text(label),
+        style: TextButton.styleFrom(
+          foregroundColor: Colors.white70,
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+          visualDensity: VisualDensity.compact,
+          side: BorderSide(
+            color: const Color(0xFF00D4FF).withValues(alpha: 0.16),
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
-      ],
+      ),
+    );
+  }
+}
+
+class _SocialLink extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  const _SocialLink({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return TextButton.icon(
+      onPressed: onTap,
+      icon: Icon(icon, size: 17),
+      label: Text(label),
+      style: TextButton.styleFrom(
+        foregroundColor: const Color(0xFF8DEAFF),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        visualDensity: VisualDensity.compact,
+      ),
     );
   }
 }

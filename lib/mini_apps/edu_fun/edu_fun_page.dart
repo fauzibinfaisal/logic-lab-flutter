@@ -18,6 +18,7 @@ class EduFunPage extends StatefulWidget {
   final LeaderboardRepository? leaderboardRepository;
   final int? visitCount;
   final bool visitCountLoading;
+  final VoidCallback? onExit;
 
   const EduFunPage({
     super.key,
@@ -25,6 +26,7 @@ class EduFunPage extends StatefulWidget {
     this.leaderboardRepository,
     this.visitCount,
     this.visitCountLoading = false,
+    this.onExit,
   });
 
   @override
@@ -80,7 +82,7 @@ class _EduFunPageState extends State<EduFunPage> {
                 age: _player?.age,
                 visitCount: widget.visitCount,
                 visitCountLoading: widget.visitCountLoading,
-                onExit: () => Navigator.of(context).pop(),
+                onExit: widget.onExit ?? () => Navigator.of(context).pop(),
               ),
               Expanded(
                 child: AnimatedSwitcher(
