@@ -9,6 +9,7 @@ abstract final class VisitScope {
   static const blePacketLab = 'ble-packet-lab';
   static const numberAdventure = 'number-adventure';
   static const memoryQuest = 'memory-quest';
+  static const patternSprint = 'pattern-sprint';
 
   static const values = {
     site,
@@ -16,6 +17,7 @@ abstract final class VisitScope {
     blePacketLab,
     numberAdventure,
     memoryQuest,
+    patternSprint,
   };
 }
 

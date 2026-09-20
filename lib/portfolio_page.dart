@@ -39,6 +39,7 @@ class _PortfolioPageState extends State<PortfolioPage> {
   ];
 
   final _scrollController = ScrollController();
+  final _heroParallaxOffset = ValueNotifier<double>(0);
   late final VisitCounterRepository _visitCounterRepository;
   final Map<String, GlobalKey> _sectionKeys = {
     for (final section in _sections)
@@ -55,6 +56,10 @@ class _PortfolioPageState extends State<PortfolioPage> {
         widget.visitCounterRepository ?? VisitCounterRepository();
     unawaited(_recordSiteVisit());
     _scrollController.addListener(() {
+      final parallaxOffset = _scrollController.offset.clamp(0.0, 900.0);
+      if (_heroParallaxOffset.value != parallaxOffset) {
+        _heroParallaxOffset.value = parallaxOffset;
+      }
       final shouldShow = _scrollController.offset > 300;
       if (shouldShow != _showTopNav) {
         setState(() => _showTopNav = shouldShow);
@@ -65,6 +70,7 @@ class _PortfolioPageState extends State<PortfolioPage> {
   @override
   void dispose() {
     _scrollController.dispose();
+    _heroParallaxOffset.dispose();
     if (widget.visitCounterRepository == null) {
       _visitCounterRepository.dispose();
     }
@@ -150,6 +156,7 @@ class _PortfolioPageState extends State<PortfolioPage> {
             child: Column(
               children: [
                 HeroSection(
+                  parallaxOffset: _heroParallaxOffset,
                   onViewMiniApps: () => _scrollToSection('Mini Apps'),
                   onDownloadCv: () => unawaited(
                     _performExternalAction(

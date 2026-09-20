@@ -26,3 +26,5 @@ flutter:
   uses-material-design: true
   assets:
     - output/pdf/Fauzi-CV.pdf
+    - assets/video/hero-cinematic.mp4
+    - assets/video/hero-cinematic-poster.jpg

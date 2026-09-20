@@ -24,6 +24,7 @@ void main() {
             'ble-packet-lab': 96,
             'number-adventure': 315,
             'memory-quest': 144,
+            'pattern-sprint': 61,
           },
         }),
         200,
@@ -42,6 +43,7 @@ void main() {
     expect(counts[VisitScope.site], 1204);
     expect(counts[VisitScope.blePacketLab], 96);
     expect(counts[VisitScope.numberAdventure], 315);
+    expect(counts[VisitScope.patternSprint], 61);
   });
 
   test('visit counter rejects unknown scopes before making a request',
