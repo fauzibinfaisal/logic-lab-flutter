@@ -45,6 +45,17 @@ const memoryQuestMiniApp = MiniAppDefinition(
   accentColor: Color(0xFF7EE8FA),
 );
 
+const patternSprintMiniApp = MiniAppDefinition(
+  id: 'pattern-sprint',
+  title: 'Pattern Sprint',
+  description:
+      'Spot the next shape or number in 10 quick pattern challenges for ages 5–7.',
+  eyebrow: 'BRAIN WARM-UP',
+  category: MiniAppCategory.eduFun,
+  icon: Icons.auto_graph_rounded,
+  accentColor: Color(0xFF9B7BFF),
+);
+
 const miniAppCatalog = [
   MiniAppCategoryDefinition(
     category: MiniAppCategory.traveling,
@@ -65,7 +76,11 @@ const miniAppCatalog = [
     title: 'Edu Fun',
     description: 'Playful learning experiences for curious young minds.',
     icon: Icons.auto_awesome_rounded,
-    apps: [numberAdventureMiniApp, memoryQuestMiniApp],
+    apps: [
+      numberAdventureMiniApp,
+      memoryQuestMiniApp,
+      patternSprintMiniApp,
+    ],
   ),
 ];
 

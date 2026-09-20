@@ -1,5 +1,7 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:logic_lab/data/portfolio_data.dart';
+import 'package:logic_lab/sections/hero_cinematic/hero_cinematic_layer.dart';
 import 'package:logic_lab/widgets/fade_in.dart';
 
 class HeroSection extends StatelessWidget {
@@ -10,6 +12,7 @@ class HeroSection extends StatelessWidget {
   final VoidCallback onLocation;
   final VoidCallback onGitHub;
   final VoidCallback onLinkedIn;
+  final ValueListenable<double>? parallaxOffset;
 
   const HeroSection({
     super.key,
@@ -20,6 +23,7 @@ class HeroSection extends StatelessWidget {
     required this.onLocation,
     required this.onGitHub,
     required this.onLinkedIn,
+    this.parallaxOffset,
   });
 
   @override
@@ -29,6 +33,7 @@ class HeroSection extends StatelessWidget {
 
     return Container(
       width: double.infinity,
+      clipBehavior: Clip.hardEdge,
       padding: EdgeInsets.symmetric(
         horizontal: isWide ? 80 : 24,
         vertical: isWide ? 100 : 72,
@@ -42,6 +47,11 @@ class HeroSection extends StatelessWidget {
       ),
       child: Stack(
         children: [
+          Positioned.fill(
+            child: _CinematicBackground(
+              parallaxOffset: parallaxOffset,
+            ),
+          ),
           // Background glow
           Positioned(
             top: -60,
@@ -263,6 +273,65 @@ class HeroSection extends StatelessWidget {
       side: const BorderSide(color: Color(0xFF2A5272)),
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
       textStyle: const TextStyle(fontWeight: FontWeight.w700),
+    );
+  }
+}
+
+class _CinematicBackground extends StatelessWidget {
+  final ValueListenable<double>? parallaxOffset;
+
+  const _CinematicBackground({required this.parallaxOffset});
+
+  @override
+  Widget build(BuildContext context) {
+    final listenable = parallaxOffset;
+    if (listenable == null) return _buildLayer(0);
+    return ValueListenableBuilder<double>(
+      valueListenable: listenable,
+      builder: (_, offset, __) => _buildLayer(offset),
+    );
+  }
+
+  Widget _buildLayer(double scrollOffset) {
+    final shift = scrollOffset.clamp(0.0, 900.0) * 0.18;
+    return Transform.translate(
+      offset: Offset(0, shift),
+      child: Transform.scale(
+        scale: 1.12,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            const HeroCinematicLayer(),
+            DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                  colors: [
+                    const Color(0xFF080D1A).withValues(alpha: 0.97),
+                    const Color(0xFF080D1A).withValues(alpha: 0.76),
+                    const Color(0xFF080D1A).withValues(alpha: 0.42),
+                  ],
+                  stops: const [0, 0.48, 1],
+                ),
+              ),
+            ),
+            DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.transparent,
+                    const Color(0xFF080D1A).withValues(alpha: 0.72),
+                  ],
+                  stops: const [0.55, 1],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

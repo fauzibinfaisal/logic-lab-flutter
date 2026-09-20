@@ -256,6 +256,7 @@ Scope yang didukung:
 - `ble-packet-lab`
 - `number-adventure`
 - `memory-quest`
+- `pattern-sprint`
 
 ### `POST /api/v1/visits`
 
@@ -278,7 +279,8 @@ Response `200` berisi seluruh counter setelah increment:
     "qibla": 31,
     "ble-packet-lab": 19,
     "number-adventure": 54,
-    "memory-quest": 28
+    "memory-quest": 28,
+    "pattern-sprint": 12
   }
 }
 ```
@@ -332,6 +334,7 @@ error state di UI. Timeout client tidak menghasilkan status HTTP dari Worker.
 | `0002_create_memory_scores.sql` | `memory_scores` | Hasil Memory Quest dan index ranking. |
 | `0003_create_visit_counters.sql` | `visit_counters` | Aggregate site dan mini-app visits. |
 | `0004_add_ble_packet_lab_visit_scope.sql` | `visit_counters` | Menambahkan scope visitor BLE Packet Lab. |
+| `0005_add_pattern_sprint_visit_scope.sql` | `visit_counters` | Menambahkan scope visitor Pattern Sprint. |
 
 Jalankan migration dan deploy dari direktori Worker:
 
@@ -357,6 +360,7 @@ npm run dev
 - Memory Quest:
   `lib/mini_apps/memory_quest/data/memory_leaderboard_api.dart`
 - Visit counters: `lib/visit_counter/data/visit_counter_api.dart`
+- Pattern Sprint menggunakan visit counter agregat yang sama dan tidak menyimpan data pemain.
 
 ## Checklist perubahan endpoint
 

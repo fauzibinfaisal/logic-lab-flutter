@@ -8,6 +8,8 @@ import 'package:logic_lab/mini_apps/edu_fun/edu_fun_page.dart'
 import 'package:logic_lab/mini_apps/memory_quest/memory_quest_page.dart'
     deferred as memory_quest;
 import 'package:logic_lab/mini_apps/models/mini_app.dart';
+import 'package:logic_lab/mini_apps/pattern_sprint/pattern_sprint_page.dart'
+    deferred as pattern_sprint;
 import 'package:logic_lab/mini_apps/qibla/qibla_page.dart' deferred as qibla;
 import 'package:logic_lab/visit_counter/data/visit_counter_repository.dart';
 
@@ -68,6 +70,7 @@ class _DeferredMiniAppPageState extends State<DeferredMiniAppPage> {
         'ble-packet-lab' => ble_packet_lab.loadLibrary(),
         'number-adventure' => edu_fun.loadLibrary(),
         'memory-quest' => memory_quest.loadLibrary(),
+        'pattern-sprint' => pattern_sprint.loadLibrary(),
         _ => Future<void>.error('Unknown mini app: ${widget.app.id}'),
       };
 
@@ -88,6 +91,11 @@ class _DeferredMiniAppPageState extends State<DeferredMiniAppPage> {
             onExit: widget.onExit,
           ),
         'memory-quest' => memory_quest.MemoryQuestPage(
+            visitCount: _visitCount,
+            visitCountLoading: _visitCountLoading,
+            onExit: widget.onExit,
+          ),
+        'pattern-sprint' => pattern_sprint.PatternSprintPage(
             visitCount: _visitCount,
             visitCountLoading: _visitCountLoading,
             onExit: widget.onExit,

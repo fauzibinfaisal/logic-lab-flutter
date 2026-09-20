@@ -2,9 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:logic_lab/mini_apps/qibla/qibla_calculator.dart';
 import 'package:logic_lab/mini_apps/qibla/qibla_page.dart';
+import 'package:logic_lab/mini_apps/data/mini_apps_catalog.dart';
 import 'package:logic_lab/sections/mini_apps_section.dart';
 
 void main() {
+  test('Pattern Sprint has a stable deep-link catalog id', () {
+    final app = miniAppById('pattern-sprint');
+
+    expect(app, isNotNull);
+    expect(app!.title, 'Pattern Sprint');
+  });
+
   group('QiblaCalculator', () {
     test('calculates the Qibla bearing from Jakarta', () {
       final bearing = QiblaCalculator.bearingFrom(-6.2088, 106.8456);
@@ -43,6 +51,7 @@ void main() {
                   'ble-packet-lab': 96,
                   'number-adventure': 315,
                   'memory-quest': 144,
+                  'pattern-sprint': 61,
                 },
                 onOpenApp: (_) => Navigator.of(context).push(
                   MaterialPageRoute<void>(
@@ -64,10 +73,12 @@ void main() {
     expect(find.text('Edu Fun'), findsOneWidget);
     expect(find.text('Number Adventure'), findsOneWidget);
     expect(find.text('Memory Quest'), findsOneWidget);
+    expect(find.text('Pattern Sprint'), findsOneWidget);
     expect(find.text('82 visits'), findsOneWidget);
     expect(find.text('96 visits'), findsOneWidget);
     expect(find.text('315 visits'), findsOneWidget);
     expect(find.text('144 visits'), findsOneWidget);
+    expect(find.text('61 visits'), findsOneWidget);
 
     await tester.tap(find.text('QIBLA App'));
     await tester.pumpAndSettle();

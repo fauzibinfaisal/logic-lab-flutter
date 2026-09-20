@@ -58,6 +58,7 @@ const visitScopes = new Set([
   "ble-packet-lab",
   "number-adventure",
   "memory-quest",
+  "pattern-sprint",
 ]);
 
 const jsonHeaders = {

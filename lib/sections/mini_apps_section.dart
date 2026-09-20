@@ -486,6 +486,45 @@ class _AppPreview extends StatelessWidget {
                 ),
             ],
           ),
+        'pattern-sprint' => Stack(
+            alignment: Alignment.center,
+            children: [
+              for (final item in const [
+                (Alignment(-0.55, 0), Icons.circle_rounded),
+                (Alignment(0, 0), Icons.change_history_rounded),
+              ])
+                Align(
+                  alignment: item.$1,
+                  child: Icon(
+                    item.$2,
+                    size: 28,
+                    color: app.accentColor,
+                  ),
+                ),
+              Align(
+                alignment: const Alignment(0.58, 0),
+                child: Container(
+                  width: 27,
+                  height: 31,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: app.accentColor.withValues(alpha: 0.16),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: app.accentColor.withValues(alpha: 0.5),
+                    ),
+                  ),
+                  child: Text(
+                    '?',
+                    style: TextStyle(
+                      color: app.accentColor,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         _ => Stack(
             alignment: Alignment.center,
             children: [
